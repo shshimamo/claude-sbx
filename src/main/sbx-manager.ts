@@ -89,8 +89,7 @@ export class SbxManager {
   create(name: string): { ok: boolean; message: string } {
     const cfg = loadConfig()
     const cloneBase = expandHome(cfg.sbx?.clone_base || '~/src')
-    const claudeTabsDir = expandHome('~/.claude-sbx')
-    const paths = [cloneBase, claudeTabsDir]
+    const paths = [cloneBase]
     if (cfg.worktree?.base) paths.push(expandHome(cfg.worktree.base))
     if (cfg.sbx?.default_mounts) paths.push(...cfg.sbx.default_mounts.map(expandHome))
 
@@ -108,17 +107,13 @@ export class SbxManager {
       return { ok: false, message: `sbx create failed: ${msg}` }
     }
 
-    // ~/.claude-sbx symlink
-    try {
-      execSync(`sbx exec ${name} sh -c 'ln -sf ${claudeTabsDir} $HOME/.claude-sbx'`, { timeout: 5000 })
-    } catch { /* ignore */ }
-
     // post-create commands
     if (cfg.sbx?.post_create_cmds) {
       for (const cmd of cfg.sbx.post_create_cmds) {
         if (cmd.length > 0) {
           try {
-            execSync(`sbx exec ${name} ${cmd.join(' ')}`, { timeout: 30000 })
+            const expanded = cmd.map(expandHome)
+            execSync(`sbx exec ${name} ${expanded.join(' ')}`, { timeout: 30000 })
           } catch { /* ignore */ }
         }
       }
@@ -301,7 +296,6 @@ export class SbxManager {
   getPreviewConfig(): {
     template: string
     cloneBase: string
-    claudeTabsDir: string
     worktreeBase: string
     mounts: string[]
     kits: string[]
@@ -311,7 +305,6 @@ export class SbxManager {
     return {
       template: cfg.sbx?.template || 'my-sbx:latest',
       cloneBase: cfg.sbx?.clone_base || '~/src',
-      claudeTabsDir: '~/.claude-sbx',
       worktreeBase: cfg.worktree?.base || '',
       mounts: cfg.sbx?.default_mounts || [],
       kits: cfg.sbx?.kits || [],

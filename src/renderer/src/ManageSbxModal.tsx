@@ -50,7 +50,7 @@ export default function ManageSbxModal({ onClose }: Props) {
   const previewCommands = useMemo(() => {
     if (!config || !newName.trim()) return []
     const name = newName.trim()
-    const paths = [config.cloneBase, config.claudeTabsDir]
+    const paths = [config.cloneBase]
     if (config.worktreeBase) paths.push(config.worktreeBase)
     paths.push(...config.mounts)
 
@@ -59,7 +59,6 @@ export default function ManageSbxModal({ onClose }: Props) {
     args.push('claude', ...paths)
 
     const cmds = [`sbx ${args.join(' ')}`]
-    cmds.push(`sbx exec ${name} ln -sf ${config.claudeTabsDir} ${config.claudeTabsDir}`)
     for (const cmd of config.postCreateCmds) {
       if (cmd.length > 0) cmds.push(`sbx exec ${name} ${cmd.join(' ')}`)
     }

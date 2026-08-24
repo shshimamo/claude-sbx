@@ -34,7 +34,7 @@ export default function DockerfileModal({ onClose }: Props) {
   }
 
   const buildCommands = config ? [
-    `docker build -t ${config.template} -f ${config.claudeTabsDir}/Dockerfile ${config.claudeTabsDir}/`,
+    `docker build -t ${config.template} -f ~/.claude-sbx/Dockerfile ~/.claude-sbx/`,
     `docker save ${config.template} -o <tmpfile>`,
     `sbx template load <tmpfile>`,
   ] : []

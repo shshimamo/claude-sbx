@@ -37,7 +37,6 @@ interface Api {
 interface SbxPreviewConfig {
   template: string
   cloneBase: string
-  claudeTabsDir: string
   worktreeBase: string
   mounts: string[]
   kits: string[]
