@@ -3,10 +3,13 @@
     "template": "my-sbx:latest",
     "clone_base": "~/src",
     "worktree_base": "~/worktrees",
-    "default_mounts": [
+    "mounts": [
       "~/dotfiles:ro"
     ],
-    "kits": [],
+    "kits": [
+      "./my-kit/",
+      "ghcr.io/myorg/my-kit:1.0"
+    ],
     "plugins": [
       {
         "source": "~/claude-plugins",

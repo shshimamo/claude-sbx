@@ -13,7 +13,7 @@ interface SbxConfig {
   template?: string
   clone_base?: string
   worktree_base?: string
-  default_mounts?: string[]
+  mounts?: string[]
   kits?: string[]
   post_create_cmds?: string[][]
   plugins?: PluginConfig[]
@@ -95,7 +95,7 @@ export class SbxManager {
     const cloneBase = expandHome(cfg.sbx?.clone_base || '~/src')
     const paths = [cloneBase]
     if (cfg.sbx?.worktree_base) paths.push(expandHome(cfg.sbx.worktree_base!))
-    if (cfg.sbx?.default_mounts) paths.push(...cfg.sbx.default_mounts.map(expandHome))
+    if (cfg.sbx?.mounts) paths.push(...cfg.sbx.mounts.map(expandHome))
 
     const template = cfg.sbx?.template || 'my-sbx:latest'
     const args = ['create', '--name', name, '-t', template]
@@ -152,8 +152,8 @@ export class SbxManager {
   private getMountedPaths(cfg: Config): string[] {
     const paths = [expandHome(cfg.sbx?.clone_base || '~/src')]
     if (cfg.sbx?.worktree_base) paths.push(expandHome(cfg.sbx.worktree_base))
-    if (cfg.sbx?.default_mounts) {
-      paths.push(...cfg.sbx.default_mounts.map((m) => expandHome(m.split(':')[0])))
+    if (cfg.sbx?.mounts) {
+      paths.push(...cfg.sbx.mounts.map((m) => expandHome(m.split(':')[0])))
     }
     return paths
   }
@@ -347,7 +347,7 @@ export class SbxManager {
       template: cfg.sbx?.template || 'my-sbx:latest',
       cloneBase: cfg.sbx?.clone_base || '~/src',
       worktreeBase: cfg.sbx?.worktree_base || '',
-      mounts: cfg.sbx?.default_mounts || [],
+      mounts: cfg.sbx?.mounts || [],
       kits: cfg.sbx?.kits || [],
       postCreateCmds: cfg.sbx?.post_create_cmds || [],
       plugins: cfg.sbx?.plugins || [],

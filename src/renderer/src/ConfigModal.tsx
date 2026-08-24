@@ -20,7 +20,7 @@ export default function ConfigModal({ onClose }: Props) {
     const topAllowed = new Set(['sbx'])
     const sbxAllowed = new Set([
       'template', 'clone_base', 'worktree_base',
-      'default_mounts', 'kits', 'post_create_cmds', 'plugins',
+      'mounts', 'kits', 'post_create_cmds', 'plugins',
     ])
     const warnings: string[] = []
 
@@ -39,7 +39,7 @@ export default function ConfigModal({ onClose }: Props) {
       if (Array.isArray(plugins)) {
         const cloneBase = (sbx.clone_base as string) || '~/src'
         const worktreeBase = (sbx.worktree_base as string) || ''
-        const mounts = ((sbx.default_mounts as string[]) || []).map((m) => m.split(':')[0])
+        const mounts = ((sbx.mounts as string[]) || []).map((m) => m.split(':')[0])
         const mountedPaths = [cloneBase, ...(worktreeBase ? [worktreeBase] : []), ...mounts]
 
         for (const pc of plugins) {
