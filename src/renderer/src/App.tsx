@@ -48,6 +48,7 @@ export default function App() {
         activeId={activeId}
         onSelect={setActiveId}
         onClose={handleClose}
+        onRename={(id, name) => window.api.renameSession(id, name)}
         onNewSession={() => setShowNewSession(true)}
         onManageSbx={() => setShowManageSbx(true)}
         onDockerfile={() => setShowDockerfile(true)}

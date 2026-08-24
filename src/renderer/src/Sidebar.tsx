@@ -5,6 +5,7 @@ interface Props {
   activeId: string | null
   onSelect: (id: string) => void
   onClose: (id: string) => void
+  onRename: (id: string, name: string) => void
   onNewSession: () => void
   onManageSbx: () => void
   onDockerfile: () => void
@@ -16,9 +17,23 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   terminated: { label: 'Ended', color: '#585b70' },
 }
 
-export default function Sidebar({ sessions, activeId, onSelect, onClose, onNewSession, onManageSbx, onDockerfile, onConfig }: Props) {
+export default function Sidebar({ sessions, activeId, onSelect, onClose, onRename, onNewSession, onManageSbx, onDockerfile, onConfig }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editValue, setEditValue] = useState('')
   const menuRef = useRef<HTMLDivElement>(null)
+  const editRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (editingId) editRef.current?.focus()
+  }, [editingId])
+
+  const commitRename = () => {
+    if (editingId && editValue.trim()) {
+      onRename(editingId, editValue.trim())
+    }
+    setEditingId(null)
+  }
 
   useEffect(() => {
     if (!menuOpen) return
@@ -60,7 +75,29 @@ export default function Sidebar({ sessions, activeId, onSelect, onClose, onNewSe
             >
               <span className="status-dot" style={{ background: st.color }} />
               <div className="session-info">
-                <div className="session-name">{s.repoPath.split('/').pop()}</div>
+                {editingId === s.id ? (
+                  <input
+                    ref={editRef}
+                    className="session-name-input"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onBlur={commitRename}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') commitRename()
+                      if (e.key === 'Escape') setEditingId(null)
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <div
+                    className="session-name"
+                    onDoubleClick={(e) => {
+                      e.stopPropagation()
+                      setEditingId(s.id)
+                      setEditValue(s.name)
+                    }}
+                  >{s.name}</div>
+                )}
                 <div className="session-meta">{s.sbx}</div>
               </div>
               <button

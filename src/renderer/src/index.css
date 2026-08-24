@@ -126,6 +126,19 @@ body {
   text-overflow: ellipsis;
 }
 
+.session-name-input {
+  width: 100%;
+  padding: 0;
+  background: var(--surface0);
+  border: 1px solid var(--blue);
+  border-radius: 3px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  outline: none;
+}
+
 .session-meta {
   font-size: 11px;
   color: var(--subtext0);

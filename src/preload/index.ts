@@ -27,6 +27,8 @@ const api = {
     return () => ipcRenderer.removeListener('sessions:updated', listener)
   },
 
+  renameSession: (id: string, name: string) => ipcRenderer.invoke('sessions:rename', id, name),
+
   // sbx
   listSbx: () => ipcRenderer.invoke('sbx:list'),
   listRepos: (sbxName: string) => ipcRenderer.invoke('sbx:repos', sbxName),

@@ -3,6 +3,7 @@ interface Session {
   sbx: string
   repoPath: string
   shell?: string
+  name: string
   status: 'active' | 'terminated'
   createdAt: number
   lastUpdated: number
@@ -16,6 +17,7 @@ interface Api {
   ptyReady: (id: string) => void
   onPtyData: (cb: (id: string, data: string) => void) => () => void
   onPtyExit: (cb: (id: string) => void) => () => void
+  renameSession: (id: string, name: string) => Promise<void>
   listSessions: () => Promise<Session[]>
   onSessionsUpdated: (cb: (sessions: Session[]) => void) => () => void
   listSbx: () => Promise<string[]>

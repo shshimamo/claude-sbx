@@ -3,6 +3,7 @@ export interface Session {
   sbx: string
   repoPath: string
   shell?: string
+  name: string
   status: 'active' | 'terminated'
   createdAt: number
   lastUpdated: number
@@ -17,6 +18,7 @@ export class SessionStore {
       sbx,
       repoPath,
       shell,
+      name: repoPath.split('/').pop() || repoPath,
       status: 'active',
       createdAt: Date.now(),
       lastUpdated: Date.now(),
@@ -29,6 +31,14 @@ export class SessionStore {
     const session = this.sessions.get(id)
     if (session) {
       session.status = status
+      session.lastUpdated = Date.now()
+    }
+  }
+
+  rename(id: string, name: string) {
+    const session = this.sessions.get(id)
+    if (session) {
+      session.name = name
       session.lastUpdated = Date.now()
     }
   }

@@ -90,6 +90,12 @@ function setupIPC() {
     return sessionStore.getAll()
   })
 
+  // セッション名変更
+  ipcMain.handle('sessions:rename', async (_event, id: string, name: string) => {
+    sessionStore.rename(id, name)
+    mainWindow?.webContents.send('sessions:updated', sessionStore.getAll())
+  })
+
   // sbx 一覧取得
   ipcMain.handle('sbx:list', async () => {
     return sbxManager.list()
