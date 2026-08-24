@@ -21,11 +21,11 @@ macOS 上で sbx 内の Claude Code を管理するためのセットアップ�
 | `config.json` | 設定ファイル |
 | `Dockerfile` | sbx テンプレート用 Dockerfile |
 
-必要に応じて編集（設定項目は [README.md](../README.md#configjson) を参照）。
+歯車メニュー > **Config** から設定を編集可能（設定項目は [README.md](../README.md#configjson) を参照）。
 
 ## 3. sbx テンプレートのビルド（初回のみ）
 
-1. サイドバーの **Dockerfile** ボタンをクリック
+1. 歯車メニュー > **Dockerfile** をクリック
 2. Dockerfile を確認（デフォルトのままでも動作する）
 3. **ビルド & ロード** ボタンをクリック
 
@@ -40,10 +40,11 @@ sbx template load <tmpfile>
 
 ## 4. 使い方
 
-1. **sbx 管理**: サイドバーの「sbx 管理」ボタンで sbx を作成
+1. **sbx 管理**: 歯車メニュー > 「sbx 管理」で sbx を作成
 2. **新規セッション**: 「+」ボタンで sbx とリポジトリを選択し、Claude を起動
    - **Existing repo**: sbx 内の既存リポジトリを選択
    - **New worktree**: ブランチ名や PR Link を入力して Worktree を作成
+   - **Shell**: zsh / bash で sbx に直接入る
 
 以降はアプリ内のターミナルで Claude を直接操作できる。
 
@@ -51,7 +52,7 @@ sbx template load <tmpfile>
 
 ### post_create_cmds
 
-sbx 作成後に自動実行するコマンドを設定可能。参考: [`sbx-setup.sh`](sbx-setup.sh)
+sbx 作成後に自動実行するコマンドを設定可能。参考: [`examples/sbx-setup.sh`](../examples/sbx-setup.sh)
 
 ```json
 {

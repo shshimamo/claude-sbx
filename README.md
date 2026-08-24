@@ -8,11 +8,13 @@ sbx 内での Claude Code 利用を制御する Electron デスクトップア�
 
 | カテゴリ | 機能 |
 |---------|------|
-| セッション管理 | sbx 内で Claude を起動、複数セッションをタブで切り替え |
+| セッション管理 | sbx 内で Claude / Shell を起動、複数セッションをタブで切り替え、名前のダブルクリック編集 |
 | sbx 管理 | sbx の作成・削除、実行コマンドのプレビュー表示 |
 | Dockerfile テンプレート | Dockerfile 編集・保存、テンプレートのビルド & ロード |
-| 新規セッション | Existing repo / New worktree 切り替え |
+| Config 編集 | config.json の GUI 編集、不明キー・plugin マウントの警告 |
+| 新規セッション | Existing repo / New worktree / Shell モード切り替え |
 | Worktree | ブランチサジェスト、PR Link からブランチ自動解決（`gh` 使用） |
+| Plugins | sbx 作成時に Claude plugins を自動インストール |
 | ターミナル | xterm.js による組み込みターミナル、sbx 内で直接操作 |
 
 ## インストール
@@ -48,19 +50,19 @@ pnpm build
 |------|------|-----------|
 | `sbx.template` | sbx テンプレート名 | `my-sbx:latest` |
 | `sbx.clone_base` | リポジトリ検索・sbx マウントのベースディレクトリ | `~/src` |
+| `sbx.worktree_base` | Worktree 保存先 | `~/worktrees` |
 | `sbx.mounts` | sbx 作成時の追加マウント（`~` 展開可） | `[]` |
 | `sbx.kits` | sbx 作成時に適用する kit | `[]` |
-| `sbx.worktree_base` | Worktree 保存先 | `~/worktrees` |
-| `sbx.post_create_cmds` | sbx 作成後に実行するコマンド（`[["cmd", "arg"], ...]`） | `[]` |
 | `sbx.plugins` | Claude plugins 設定（`[{"source": "...", "plugins": ["..."]}]`） | `[]` |
+| `sbx.post_create_cmds` | sbx 作成後に実行するコマンド（`[["cmd", "arg"], ...]`） | `[]` |
 
 ## アーキテクチャ
 
 ```
 [Electron Main Process]
   ├─ node-pty (シェル + sbx exec)
-  ├─ SbxManager (sbx CRUD, Dockerfile, Worktree)
-  └─ SessionStore (セッション状態管理)
+  ├─ SbxManager (sbx CRUD, Dockerfile, Worktree, Plugins)
+  └─ SessionStore (セッション管理)
         ↓ IPC
 [Electron Renderer]
   ├─ xterm.js (ターミナル表示)
@@ -76,18 +78,19 @@ claude-sbx/
 │   ├── main/
 │   │   ├── index.ts          # Electron メインプロセス、IPC ハンドラ
 │   │   ├── pty-manager.ts    # PTY ライフサイクル管理
-│   │   ├── sbx-manager.ts    # sbx CRUD, Dockerfile, Worktree, ブランチ一覧
-│   │   ├── session-store.ts  # セッション状態管理
+│   │   ├── sbx-manager.ts    # sbx CRUD, Dockerfile, Worktree, Plugins
+│   │   └── session-store.ts  # セッション管理
 │   ├── preload/
 │   │   └── index.ts          # Context bridge (main ↔ renderer)
 │   └── renderer/
 │       └── src/
 │           ├── App.tsx              # メインレイアウト
 │           ├── Terminal.tsx          # xterm.js ターミナル
-│           ├── Sidebar.tsx           # セッション一覧 + ツールバー
-│           ├── NewSessionModal.tsx   # 新規セッション（Existing repo / New worktree）
+│           ├── Sidebar.tsx           # セッション一覧 + 歯車メニュー
+│           ├── NewSessionModal.tsx   # 新規セッション（Existing repo / New worktree / Shell）
 │           ├── ManageSbxModal.tsx    # sbx 管理（作成・削除）
 │           ├── DockerfileModal.tsx   # Dockerfile テンプレート編集
+│           ├── ConfigModal.tsx       # Config 編集
 │           ├── types.d.ts           # 型定義
 │           └── index.css            # Catppuccin Mocha テーマ
 ├── setups/                  # セットアップガイド
