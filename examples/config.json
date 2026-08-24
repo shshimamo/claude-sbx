@@ -7,7 +7,7 @@
     ],
     "kits": [],
     "post_create_cmds": [
-      ["~/src/claude-sbx/setups/sbx-setup.sh"]
+      ["~/src/claude-sbx/examples/sbx-setup.sh"]
     ]
   },
   "worktree": {

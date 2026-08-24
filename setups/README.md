@@ -56,7 +56,7 @@ sbx 作成後に自動実行するコマンドを設定可能。参考: [`sbx-se
 ```json
 {
   "sbx": {
-    "post_create_cmds": [["~/src/claude-sbx/setups/sbx-setup.sh"]]
+    "post_create_cmds": [["~/src/claude-sbx/examples/sbx-setup.sh"]]
   }
 }
 ```
