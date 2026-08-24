@@ -17,11 +17,49 @@ interface Config {
   worktree?: { base?: string }
 }
 
+const DEFAULT_CONFIG: Config = {
+  sbx: {
+    template: 'my-sbx:latest',
+    clone_base: '~/src',
+  },
+  worktree: {
+    base: '~/worktrees',
+  },
+}
+
+const DEFAULT_DOCKERFILE = `FROM ubuntu:24.04
+
+RUN apt-get update && apt-get install -y \\
+    curl \\
+    git \\
+    gh \\
+    zsh \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Claude Code
+RUN curl -fsSL https://cli.anthropic.com/install.sh | sh
+`
+
+function ensureDefaults(): void {
+  const dir = join(homedir(), '.claude-tabs')
+  mkdirSync(dir, { recursive: true })
+
+  const configPath = join(dir, 'config.json')
+  if (!existsSync(configPath)) {
+    writeFileSync(configPath, JSON.stringify(DEFAULT_CONFIG, null, 2) + '\n', 'utf-8')
+  }
+
+  const dockerfilePath = join(dir, 'Dockerfile')
+  if (!existsSync(dockerfilePath)) {
+    writeFileSync(dockerfilePath, DEFAULT_DOCKERFILE, 'utf-8')
+  }
+}
+
 function loadConfig(): Config {
   try {
     return JSON.parse(readFileSync(join(homedir(), '.claude-tabs', 'config.json'), 'utf-8'))
   } catch {
-    return {}
+    return DEFAULT_CONFIG
   }
 }
 
@@ -30,6 +68,10 @@ function expandHome(p: string): string {
 }
 
 export class SbxManager {
+  constructor() {
+    ensureDefaults()
+  }
+
   list(): string[] {
     try {
       return execSync('sbx ls -q', { encoding: 'utf-8', timeout: 5000 })
@@ -278,25 +320,7 @@ export class SbxManager {
     try {
       return readFileSync(path, 'utf-8')
     } catch {
-      return `FROM docker/sandbox-templates:claude-code
-
-USER root
-
-# Basic tools
-RUN apt-get update && apt-get install -y --no-install-recommends \\
-    zsh \\
-    curl \\
-    jq \\
-    make \\
-    vim \\
-    git \\
-    && rm -rf /var/lib/apt/lists/*
-
-# Set zsh as default shell
-RUN chsh -s /usr/bin/zsh agent
-
-USER agent
-`
+      return DEFAULT_DOCKERFILE
     }
   }
 

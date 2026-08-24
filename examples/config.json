@@ -1,0 +1,16 @@
+{
+  "sbx": {
+    "template": "my-sbx:latest",
+    "clone_base": "~/src",
+    "default_mounts": [
+      "~/dotfiles:ro"
+    ],
+    "kits": [],
+    "post_create_cmds": [
+      ["~/src/claude-tabs-app/setups/sbx-setup.sh"]
+    ]
+  },
+  "worktree": {
+    "base": "~/worktrees"
+  }
+}
