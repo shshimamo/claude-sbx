@@ -52,18 +52,11 @@ sbx template load <tmpfile>
 
 ## カスタマイズ
 
-### post_create_cmds
+歯車メニュー > **Config** から設定を編集できる。詳細は [`examples/config.json`](../examples/config.json) を参照。
 
-sbx 作成後に自動実行するコマンドを設定可能。参考: [`examples/sbx-setup.sh`](../examples/sbx-setup.sh)
-
-```json
-{
-  "sbx": {
-    "post_create_cmds": [["~/src/claude-sbx/examples/sbx-setup.sh"]]
-  }
-}
-```
-
-### 設定ファイルの参考例
-
-[`examples/`](../examples/) に `config.json` と `sbx-setup.sh` の参考例がある。
+| キー | 用途 |
+|------|------|
+| `sbx.post_create_cmds` | sbx 作成後にコマンドを実行したい場合 |
+| `sbx.plugins` | Claude plugins を設定したい場合 |
+| `sbx.kits` | kits を設定したい場合 |
+| `sbx.mounts` | `clone_base` / `worktree_base` 以外をマウントしたい場合 |
