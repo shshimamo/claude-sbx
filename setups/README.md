@@ -14,6 +14,12 @@ macOS 上で sbx 内の Claude Code を管理するためのセットアップ�
 
 [Releases](https://github.com/shshimamo/claude-sbx/releases) から `.dmg` をダウンロードしてインストール。
 
+コード署名がないため、初回は Gatekeeper を解除する:
+
+```sh
+xattr -cr /Applications/Claude\ Sbx.app
+```
+
 ## 2. 初回起動
 
 アプリを起動すると `~/.claude-sbx/` に以下が自動生成される:

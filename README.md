@@ -23,6 +23,12 @@ sbx 内での Claude Code 利用を制御する Electron デスクトップア�
 
 [Releases](https://github.com/shshimamo/claude-sbx/releases) から `.dmg` をダウンロードしてインストール。
 
+コード署名がないため、初回は Gatekeeper を解除する:
+
+```sh
+xattr -cr /Applications/Claude\ Sbx.app
+```
+
 初回起動時に `~/.claude-sbx/config.json` と `~/.claude-sbx/Dockerfile` が自動生成される。
 
 詳細なセットアップ手順は [setups/](setups/) を参照。

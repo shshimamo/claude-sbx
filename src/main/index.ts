@@ -160,7 +160,18 @@ function setupIPC() {
   })
 }
 
+// macOS GUI アプリはシェルの PATH を継承しないため補完
+function fixPath() {
+  const extra = ['/opt/homebrew/bin', '/opt/homebrew/sbin', '/usr/local/bin']
+  const current = process.env.PATH || ''
+  const missing = extra.filter((p) => !current.split(':').includes(p))
+  if (missing.length) {
+    process.env.PATH = [...missing, current].join(':')
+  }
+}
+
 app.whenReady().then(() => {
+  fixPath()
   setupIPC()
   createWindow()
 
