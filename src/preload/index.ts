@@ -30,6 +30,22 @@ const api = {
   // sbx
   listSbx: () => ipcRenderer.invoke('sbx:list'),
   listRepos: (sbxName: string) => ipcRenderer.invoke('sbx:repos', sbxName),
+  createSbx: (name: string) => ipcRenderer.invoke('sbx:create', name),
+  deleteSbx: (name: string) => ipcRenderer.invoke('sbx:delete', name),
+
+  // dockerfile
+  getDockerfile: () => ipcRenderer.invoke('sbx:dockerfile:get'),
+  saveDockerfile: (content: string) => ipcRenderer.invoke('sbx:dockerfile:save', content),
+  buildTemplate: () => ipcRenderer.invoke('sbx:dockerfile:build'),
+
+  // branches & worktree
+  listBranches: (sbxName: string, repoPath: string) =>
+    ipcRenderer.invoke('sbx:branches', sbxName, repoPath),
+  createWorktree: (repo: string, branch: string, baseBranch?: string) =>
+    ipcRenderer.invoke('sbx:worktree:create', repo, branch, baseBranch),
+
+  // config
+  getSbxConfig: () => ipcRenderer.invoke('sbx:config'),
 }
 
 contextBridge.exposeInMainWorld('api', api)

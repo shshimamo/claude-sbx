@@ -4,6 +4,8 @@ interface Props {
   onSelect: (id: string) => void
   onClose: (id: string) => void
   onNewSession: () => void
+  onManageSbx: () => void
+  onDockerfile: () => void
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -15,12 +17,16 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   terminated: { label: 'Ended', color: '#585b70' },
 }
 
-export default function Sidebar({ sessions, activeId, onSelect, onClose, onNewSession }: Props) {
+export default function Sidebar({ sessions, activeId, onSelect, onClose, onNewSession, onManageSbx, onDockerfile }: Props) {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
         <h1>Claude Tabs</h1>
         <button className="btn-new" onClick={onNewSession}>+</button>
+      </div>
+      <div className="sidebar-toolbar">
+        <button className="btn-toolbar" onClick={onManageSbx}>sbx 管理</button>
+        <button className="btn-toolbar" onClick={onDockerfile}>Dockerfile</button>
       </div>
       <div className="session-list">
         {sessions.map((s) => {

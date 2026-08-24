@@ -22,6 +22,24 @@ interface Api {
   onSessionsUpdated: (cb: (sessions: Session[]) => void) => () => void
   listSbx: () => Promise<string[]>
   listRepos: (sbxName: string) => Promise<{ path: string; branch: string }[]>
+  createSbx: (name: string) => Promise<{ ok: boolean; message: string }>
+  deleteSbx: (name: string) => Promise<{ ok: boolean; message: string }>
+  getDockerfile: () => Promise<string>
+  saveDockerfile: (content: string) => Promise<void>
+  buildTemplate: () => Promise<{ ok: boolean; message: string }>
+  listBranches: (sbxName: string, repoPath: string) => Promise<string[]>
+  createWorktree: (repo: string, branch: string, baseBranch?: string) => Promise<{ ok: boolean; wtPath: string; message: string }>
+  getSbxConfig: () => Promise<SbxPreviewConfig>
+}
+
+interface SbxPreviewConfig {
+  template: string
+  cloneBase: string
+  claudeTabsDir: string
+  worktreeBase: string
+  mounts: string[]
+  kits: string[]
+  postCreateCmds: string[][]
 }
 
 declare global {

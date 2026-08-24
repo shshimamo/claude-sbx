@@ -2,11 +2,15 @@ import { useState, useEffect, useCallback } from 'react'
 import Sidebar from './Sidebar'
 import Terminal from './Terminal'
 import NewSessionModal from './NewSessionModal'
+import ManageSbxModal from './ManageSbxModal'
+import DockerfileModal from './DockerfileModal'
 
 export default function App() {
   const [sessions, setSessions] = useState<Session[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [showNewSession, setShowNewSession] = useState(false)
+  const [showManageSbx, setShowManageSbx] = useState(false)
+  const [showDockerfile, setShowDockerfile] = useState(false)
 
   useEffect(() => {
     window.api.listSessions().then(setSessions)
@@ -43,6 +47,8 @@ export default function App() {
         onSelect={setActiveId}
         onClose={handleClose}
         onNewSession={() => setShowNewSession(true)}
+        onManageSbx={() => setShowManageSbx(true)}
+        onDockerfile={() => setShowDockerfile(true)}
       />
       <main className="main-content">
         {sessions.map((s) => (
@@ -61,6 +67,12 @@ export default function App() {
           onClose={() => setShowNewSession(false)}
           onCreate={handleCreate}
         />
+      )}
+      {showManageSbx && (
+        <ManageSbxModal onClose={() => setShowManageSbx(false)} />
+      )}
+      {showDockerfile && (
+        <DockerfileModal onClose={() => setShowDockerfile(false)} />
       )}
     </div>
   )

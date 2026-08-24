@@ -3,10 +3,12 @@ import { join } from 'path'
 import { PtyManager } from './pty-manager'
 import { HookServer } from './hook-server'
 import { SessionStore } from './session-store'
+import { SbxManager } from './sbx-manager'
 
 let mainWindow: BrowserWindow | null = null
 const sessionStore = new SessionStore()
 const ptyManager = new PtyManager()
+const sbxManager = new SbxManager()
 let hookServer: HookServer | null = null
 // pty 出力バッファ（レンダラー準備完了前のデータを保持）
 const ptyBuffers = new Map<string, string[]>()
@@ -92,12 +94,54 @@ function setupIPC() {
 
   // sbx 一覧取得
   ipcMain.handle('sbx:list', async () => {
-    return ptyManager.listSbx()
+    return sbxManager.list()
   })
 
   // sbx 内のリポジトリ一覧取得
   ipcMain.handle('sbx:repos', async (_event, sbxName: string) => {
-    return ptyManager.listRepos(sbxName)
+    return sbxManager.listRepos(sbxName)
+  })
+
+  // sbx 作成
+  ipcMain.handle('sbx:create', async (_event, name: string) => {
+    return sbxManager.create(name)
+  })
+
+  // sbx 削除
+  ipcMain.handle('sbx:delete', async (_event, name: string) => {
+    return sbxManager.delete(name)
+  })
+
+  // Dockerfile 取得
+  ipcMain.handle('sbx:dockerfile:get', async () => {
+    return sbxManager.getDockerfile()
+  })
+
+  // Dockerfile 保存
+  ipcMain.handle('sbx:dockerfile:save', async (_event, content: string) => {
+    sbxManager.saveDockerfile(content)
+  })
+
+  // テンプレートビルド
+  ipcMain.handle('sbx:dockerfile:build', async () => {
+    return new Promise<{ ok: boolean; message: string }>((resolve) => {
+      sbxManager.buildTemplate(resolve)
+    })
+  })
+
+  // プレビュー用 config
+  ipcMain.handle('sbx:config', async () => {
+    return sbxManager.getPreviewConfig()
+  })
+
+  // ブランチ一覧
+  ipcMain.handle('sbx:branches', async (_event, sbxName: string, repoPath: string) => {
+    return sbxManager.listBranches(sbxName, repoPath)
+  })
+
+  // worktree 作成
+  ipcMain.handle('sbx:worktree:create', async (_event, repo: string, branch: string, baseBranch?: string) => {
+    return sbxManager.createWorktree(repo, branch, baseBranch)
   })
 }
 
@@ -105,7 +149,7 @@ app.whenReady().then(() => {
   setupIPC()
   createWindow()
 
-  hookServer = new HookServer(6277, sessionStore, () => {
+  hookServer = new HookServer(6278, sessionStore, () => {
     mainWindow?.webContents.send('sessions:updated', sessionStore.getAll())
   })
   hookServer.start()
