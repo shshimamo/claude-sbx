@@ -17,7 +17,7 @@ jobs:
       - uses: jdx/mise-action@v2
 
       - name: Install Python setuptools (needed by node-gyp)
-        run: pip3 install setuptools
+        run: brew install python-setuptools
 
       - name: Install dependencies
         run: pnpm install
