@@ -43,6 +43,10 @@ export class SessionStore {
     }
   }
 
+  remove(id: string) {
+    this.sessions.delete(id)
+  }
+
   getAll(): Session[] {
     return Array.from(this.sessions.values())
   }

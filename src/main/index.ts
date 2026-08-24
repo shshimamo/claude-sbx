@@ -82,6 +82,7 @@ function setupIPC() {
 
   // pty 破棄
   ipcMain.handle('pty:kill', async (_event, id: string) => {
+    sessionStore.remove(id)
     ptyManager.kill(id)
   })
 
