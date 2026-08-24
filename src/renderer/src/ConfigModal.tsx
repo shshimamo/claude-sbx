@@ -16,15 +16,42 @@ export default function ConfigModal({ onClose }: Props) {
     })
   }, [])
 
+  const validateKeys = (obj: Record<string, unknown>): string[] => {
+    const topAllowed = new Set(['sbx'])
+    const sbxAllowed = new Set([
+      'template', 'clone_base', 'worktree_base',
+      'default_mounts', 'kits', 'post_create_cmds',
+    ])
+    const warnings: string[] = []
+
+    for (const key of Object.keys(obj)) {
+      if (!topAllowed.has(key)) warnings.push(`不明なキー: "${key}"`)
+    }
+    if (obj.sbx && typeof obj.sbx === 'object') {
+      for (const key of Object.keys(obj.sbx as Record<string, unknown>)) {
+        if (!sbxAllowed.has(key)) warnings.push(`不明なキー: sbx."${key}"`)
+      }
+    }
+    return warnings
+  }
+
   const handleSave = async () => {
+    let parsed: Record<string, unknown>
     try {
-      JSON.parse(content)
+      parsed = JSON.parse(content)
     } catch {
       setMessage({ text: 'JSON の構文エラー', ok: false })
       return
     }
+
+    const warnings = validateKeys(parsed)
     await window.api.saveConfig(content)
-    setMessage({ text: '保存完了', ok: true })
+
+    if (warnings.length > 0) {
+      setMessage({ text: `保存完了（警告: ${warnings.join(', ')}）`, ok: true })
+    } else {
+      setMessage({ text: '保存完了', ok: true })
+    }
   }
 
   return (
