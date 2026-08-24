@@ -1,3 +1,5 @@
+import { useState, useRef, useEffect } from 'react'
+
 interface Props {
   sessions: Session[]
   activeId: string | null
@@ -19,16 +21,37 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 }
 
 export default function Sidebar({ sessions, activeId, onSelect, onClose, onNewSession, onManageSbx, onDockerfile, onConfig }: Props) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [menuOpen])
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
         <h1>Claude Sbx</h1>
-        <button className="btn-new" onClick={onNewSession}>+</button>
-      </div>
-      <div className="sidebar-toolbar">
-        <button className="btn-toolbar" onClick={onManageSbx}>sbx 管理</button>
-        <button className="btn-toolbar" onClick={onDockerfile}>Dockerfile</button>
-        <button className="btn-toolbar" onClick={onConfig}>Config</button>
+        <div className="sidebar-header-actions">
+          <div className="gear-wrap" ref={menuRef}>
+            <button className="btn-gear" onClick={() => setMenuOpen(!menuOpen)}>&#9881;</button>
+            {menuOpen && (
+              <div className="gear-menu">
+                <div className="gear-menu-item" onClick={() => { onManageSbx(); setMenuOpen(false) }}>sbx 管理</div>
+                <div className="gear-menu-item" onClick={() => { onDockerfile(); setMenuOpen(false) }}>Dockerfile</div>
+                <div className="gear-menu-item" onClick={() => { onConfig(); setMenuOpen(false) }}>Config</div>
+              </div>
+            )}
+          </div>
+          <button className="btn-new" onClick={onNewSession}>+</button>
+        </div>
       </div>
       <div className="session-list">
         {sessions.map((s) => {

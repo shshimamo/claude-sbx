@@ -282,29 +282,60 @@ body {
   cursor: not-allowed;
 }
 
-/* Sidebar toolbar */
-.sidebar-toolbar {
+/* Sidebar header actions */
+.sidebar-header-actions {
   display: flex;
-  gap: 4px;
-  padding: 0 16px 8px;
+  align-items: center;
+  gap: 6px;
   -webkit-app-region: no-drag;
 }
 
-.btn-toolbar {
-  flex: 1;
-  padding: 5px 8px;
+.gear-wrap {
+  position: relative;
+}
+
+.btn-gear {
+  width: 28px;
+  height: 28px;
   border: none;
   border-radius: 6px;
   background: var(--surface0);
   color: var(--subtext0);
-  font-size: 11px;
+  font-size: 16px;
   cursor: pointer;
-  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.btn-toolbar:hover {
+.btn-gear:hover {
   background: var(--surface1);
   color: var(--text);
+}
+
+.gear-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--crust);
+  border: 1px solid var(--surface1);
+  border-radius: 8px;
+  padding: 4px 0;
+  min-width: 140px;
+  z-index: 50;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.gear-menu-item {
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.gear-menu-item:hover {
+  background: var(--surface0);
 }
 
 /* Modal variants */
