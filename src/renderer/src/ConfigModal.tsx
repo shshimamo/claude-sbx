@@ -20,7 +20,7 @@ export default function ConfigModal({ onClose }: Props) {
     const topAllowed = new Set(['sbx'])
     const sbxAllowed = new Set([
       'template', 'clone_base', 'worktree_base',
-      'default_mounts', 'kits', 'post_create_cmds',
+      'default_mounts', 'kits', 'post_create_cmds', 'plugins',
     ])
     const warnings: string[] = []
 
@@ -32,6 +32,28 @@ export default function ConfigModal({ onClose }: Props) {
         if (!sbxAllowed.has(key)) warnings.push(`不明なキー: sbx."${key}"`)
       }
     }
+    // plugins の source マウントチェック
+    const sbx = obj.sbx as Record<string, unknown> | undefined
+    if (sbx) {
+      const plugins = sbx.plugins as { source: string; plugins: string[] }[] | undefined
+      if (Array.isArray(plugins)) {
+        const cloneBase = (sbx.clone_base as string) || '~/src'
+        const worktreeBase = (sbx.worktree_base as string) || ''
+        const mounts = ((sbx.default_mounts as string[]) || []).map((m) => m.split(':')[0])
+        const mountedPaths = [cloneBase, ...(worktreeBase ? [worktreeBase] : []), ...mounts]
+
+        for (const pc of plugins) {
+          const source = pc.source || ''
+          if (source.startsWith('~/') || source.startsWith('/')) {
+            const isMounted = mountedPaths.some((m) => source === m || source.startsWith(m + '/'))
+            if (!isMounted) {
+              warnings.push(`plugin source "${source}" がマウント対象に含まれていない`)
+            }
+          }
+        }
+      }
+    }
+
     return warnings
   }
 

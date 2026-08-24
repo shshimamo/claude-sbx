@@ -2,15 +2,19 @@
   "sbx": {
     "template": "my-sbx:latest",
     "clone_base": "~/src",
+    "worktree_base": "~/worktrees",
     "default_mounts": [
       "~/dotfiles:ro"
     ],
     "kits": [],
+    "plugins": [
+      {
+        "source": "~/claude-plugins",
+        "plugins": ["my-plugin"]
+      }
+    ],
     "post_create_cmds": [
       ["~/src/claude-sbx/examples/sbx-setup.sh"]
     ]
-  },
-  "worktree": {
-    "base": "~/worktrees"
   }
 }

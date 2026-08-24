@@ -4,26 +4,30 @@ import { join, basename } from 'path'
 import { homedir } from 'os'
 import { tmpdir } from 'os'
 
+interface PluginConfig {
+  source: string
+  plugins: string[]
+}
+
 interface SbxConfig {
   template?: string
   clone_base?: string
+  worktree_base?: string
   default_mounts?: string[]
   kits?: string[]
   post_create_cmds?: string[][]
+  plugins?: PluginConfig[]
 }
 
 interface Config {
   sbx?: SbxConfig
-  worktree?: { base?: string }
 }
 
 const DEFAULT_CONFIG: Config = {
   sbx: {
     template: 'my-sbx:latest',
     clone_base: '~/src',
-  },
-  worktree: {
-    base: '~/worktrees',
+    worktree_base: '~/worktrees',
   },
 }
 
@@ -90,7 +94,7 @@ export class SbxManager {
     const cfg = loadConfig()
     const cloneBase = expandHome(cfg.sbx?.clone_base || '~/src')
     const paths = [cloneBase]
-    if (cfg.worktree?.base) paths.push(expandHome(cfg.worktree.base))
+    if (cfg.sbx?.worktree_base) paths.push(expandHome(cfg.sbx.worktree_base!))
     if (cfg.sbx?.default_mounts) paths.push(...cfg.sbx.default_mounts.map(expandHome))
 
     const template = cfg.sbx?.template || 'my-sbx:latest'
@@ -119,7 +123,43 @@ export class SbxManager {
       }
     }
 
+    // plugins install
+    if (cfg.sbx?.plugins) {
+      const mountedPaths = this.getMountedPaths(cfg)
+      for (const pc of cfg.sbx.plugins) {
+        const source = expandHome(pc.source)
+        if (this.isLocalPath(source) && !this.isPathMounted(source, mountedPaths)) {
+          return { ok: true, message: `sbx created: ${name}（警告: plugin source "${pc.source}" がマウントされていない）` }
+        }
+        try {
+          execSync(`sbx exec ${name} claude plugins marketplace add ${source}`, { timeout: 30000 })
+        } catch { /* ignore */ }
+        for (const plugin of pc.plugins) {
+          try {
+            execSync(`sbx exec ${name} claude plugins install ${plugin}`, { timeout: 30000 })
+          } catch { /* ignore */ }
+        }
+      }
+    }
+
     return { ok: true, message: `sbx created: ${name}` }
+  }
+
+  private isLocalPath(p: string): boolean {
+    return p.startsWith('/') || p.startsWith('~/')
+  }
+
+  private getMountedPaths(cfg: Config): string[] {
+    const paths = [expandHome(cfg.sbx?.clone_base || '~/src')]
+    if (cfg.sbx?.worktree_base) paths.push(expandHome(cfg.sbx.worktree_base))
+    if (cfg.sbx?.default_mounts) {
+      paths.push(...cfg.sbx.default_mounts.map((m) => expandHome(m.split(':')[0])))
+    }
+    return paths
+  }
+
+  private isPathMounted(source: string, mountedPaths: string[]): boolean {
+    return mountedPaths.some((m) => source === m || source.startsWith(m + '/'))
   }
 
   delete(name: string): { ok: boolean; message: string } {
@@ -135,7 +175,7 @@ export class SbxManager {
   listRepos(sbxName: string): { path: string; branch: string }[] {
     const cfg = loadConfig()
     const bases: string[] = []
-    if (cfg.worktree?.base) bases.push(expandHome(cfg.worktree.base))
+    if (cfg.sbx?.worktree_base) bases.push(expandHome(cfg.sbx.worktree_base!))
     bases.push(expandHome(cfg.sbx?.clone_base || '~/src'))
 
     const repos: { path: string; branch: string }[] = []
@@ -228,7 +268,7 @@ export class SbxManager {
       return { ok: false, wtPath: '', message: `Repository not found: ${repoName}` }
     }
 
-    const wtBase = expandHome(cfg.worktree?.base || '~/worktrees')
+    const wtBase = expandHome(cfg.sbx?.worktree_base || '~/worktrees')
     const dirPrefix = prNumber ? `pr${prNumber}-` : ''
     const safeBranch = branch.replace(/\//g, '__')
     const wtPath = join(wtBase, repoName, dirPrefix + safeBranch)
@@ -300,15 +340,17 @@ export class SbxManager {
     mounts: string[]
     kits: string[]
     postCreateCmds: string[][]
+    plugins: { source: string; plugins: string[] }[]
   } {
     const cfg = loadConfig()
     return {
       template: cfg.sbx?.template || 'my-sbx:latest',
       cloneBase: cfg.sbx?.clone_base || '~/src',
-      worktreeBase: cfg.worktree?.base || '',
+      worktreeBase: cfg.sbx?.worktree_base || '',
       mounts: cfg.sbx?.default_mounts || [],
       kits: cfg.sbx?.kits || [],
       postCreateCmds: cfg.sbx?.post_create_cmds || [],
+      plugins: cfg.sbx?.plugins || [],
     }
   }
 

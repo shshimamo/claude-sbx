@@ -42,6 +42,7 @@ interface SbxPreviewConfig {
   mounts: string[]
   kits: string[]
   postCreateCmds: string[][]
+  plugins: { source: string; plugins: string[] }[]
 }
 
 declare global {

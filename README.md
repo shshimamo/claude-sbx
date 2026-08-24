@@ -50,8 +50,9 @@ pnpm build
 | `sbx.clone_base` | リポジトリ検索・sbx マウントのベースディレクトリ | `~/src` |
 | `sbx.default_mounts` | sbx 作成時の追加マウント（`~` 展開可） | `[]` |
 | `sbx.kits` | sbx 作成時に適用する kit | `[]` |
+| `sbx.worktree_base` | Worktree 保存先 | `~/worktrees` |
 | `sbx.post_create_cmds` | sbx 作成後に実行するコマンド（`[["cmd", "arg"], ...]`） | `[]` |
-| `worktree.base` | Worktree 保存先 | `~/worktrees` |
+| `sbx.plugins` | Claude plugins 設定（`[{"source": "...", "plugins": ["..."]}]`） | `[]` |
 
 ## アーキテクチャ
 

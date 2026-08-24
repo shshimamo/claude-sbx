@@ -62,6 +62,12 @@ export default function ManageSbxModal({ onClose }: Props) {
     for (const cmd of config.postCreateCmds) {
       if (cmd.length > 0) cmds.push(`sbx exec ${name} ${cmd.join(' ')}`)
     }
+    for (const pc of config.plugins) {
+      cmds.push(`sbx exec ${name} claude plugins marketplace add ${pc.source}`)
+      for (const p of pc.plugins) {
+        cmds.push(`sbx exec ${name} claude plugins install ${p}`)
+      }
+    }
     return cmds
   }, [config, newName])
 
