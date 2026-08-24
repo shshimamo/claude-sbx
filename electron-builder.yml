@@ -1,5 +1,10 @@
 appId: com.shshimamo.claude-sbx
 productName: Claude Sbx
+directories:
+  output: release
+files:
+  - dist/**/*
+  - package.json
 mac:
   target:
     - target: dmg
