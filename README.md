@@ -60,8 +60,7 @@ pnpm build
 [Electron Main Process]
   ├─ node-pty (シェル + sbx exec)
   ├─ SbxManager (sbx CRUD, Dockerfile, Worktree)
-  ├─ SessionStore (セッション状態管理)
-  └─ HookServer (Claude Code hooks 受信)
+  └─ SessionStore (セッション状態管理)
         ↓ IPC
 [Electron Renderer]
   ├─ xterm.js (ターミナル表示)
@@ -79,7 +78,6 @@ claude-sbx/
 │   │   ├── pty-manager.ts    # PTY ライフサイクル管理
 │   │   ├── sbx-manager.ts    # sbx CRUD, Dockerfile, Worktree, ブランチ一覧
 │   │   ├── session-store.ts  # セッション状態管理
-│   │   └── hook-server.ts    # Claude Code hooks 受信 HTTP サーバー
 │   ├── preload/
 │   │   └── index.ts          # Context bridge (main ↔ renderer)
 │   └── renderer/

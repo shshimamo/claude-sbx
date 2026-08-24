@@ -1,7 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { PtyManager } from './pty-manager'
-import { HookServer } from './hook-server'
 import { SessionStore } from './session-store'
 import { SbxManager } from './sbx-manager'
 
@@ -9,7 +8,6 @@ let mainWindow: BrowserWindow | null = null
 const sessionStore = new SessionStore()
 const ptyManager = new PtyManager()
 const sbxManager = new SbxManager()
-let hookServer: HookServer | null = null
 // pty 出力バッファ（レンダラー準備完了前のデータを保持）
 const ptyBuffers = new Map<string, string[]>()
 const ptyReady = new Set<string>()
@@ -159,11 +157,6 @@ app.whenReady().then(() => {
   setupIPC()
   createWindow()
 
-  hookServer = new HookServer(6278, sessionStore, () => {
-    mainWindow?.webContents.send('sessions:updated', sessionStore.getAll())
-  })
-  hookServer.start()
-
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
@@ -171,6 +164,5 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   ptyManager.killAll()
-  hookServer?.stop()
   if (process.platform !== 'darwin') app.quit()
 })

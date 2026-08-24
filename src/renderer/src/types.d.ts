@@ -3,12 +3,9 @@ interface Session {
   sbx: string
   repoPath: string
   shell?: string
-  status: 'active' | 'ai_working' | 'waiting_input' | 'permission_required' | 'idle' | 'terminated'
+  status: 'active' | 'terminated'
   createdAt: number
   lastUpdated: number
-  claudeSessionId?: string
-  lastOutput?: string
-  question?: string
 }
 
 interface Api {

@@ -13,10 +13,6 @@ interface Props {
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   active: { label: 'Active', color: '#a6e3a1' },
-  ai_working: { label: 'AI Working', color: '#f9e2af' },
-  waiting_input: { label: 'Input', color: '#89b4fa' },
-  permission_required: { label: 'Permission', color: '#f38ba8' },
-  idle: { label: 'Idle', color: '#6c7086' },
   terminated: { label: 'Ended', color: '#585b70' },
 }
 
@@ -65,7 +61,7 @@ export default function Sidebar({ sessions, activeId, onSelect, onClose, onNewSe
               <span className="status-dot" style={{ background: st.color }} />
               <div className="session-info">
                 <div className="session-name">{s.repoPath.split('/').pop()}</div>
-                <div className="session-meta">{s.sbx} &middot; {s.shell || st.label}</div>
+                <div className="session-meta">{s.sbx}</div>
               </div>
               <button
                 className="btn-close"

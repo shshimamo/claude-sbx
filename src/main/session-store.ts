@@ -3,12 +3,9 @@ export interface Session {
   sbx: string
   repoPath: string
   shell?: string
-  status: 'active' | 'ai_working' | 'waiting_input' | 'permission_required' | 'idle' | 'terminated'
+  status: 'active' | 'terminated'
   createdAt: number
   lastUpdated: number
-  claudeSessionId?: string
-  lastOutput?: string
-  question?: string
 }
 
 export class SessionStore {
@@ -34,50 +31,6 @@ export class SessionStore {
       session.status = status
       session.lastUpdated = Date.now()
     }
-  }
-
-  // hook から呼ばれる: claudeSessionId でマッチ or sbx+repo でマッチ
-  updateFromHook(data: {
-    session_id: string
-    status: string
-    question?: string
-    last_output?: string
-  }) {
-    // claudeSessionId で検索
-    for (const session of this.sessions.values()) {
-      if (session.claudeSessionId === data.session_id) {
-        session.status = this.mapHookStatus(data.status)
-        session.lastUpdated = Date.now()
-        session.question = data.question
-        session.lastOutput = data.last_output
-        return session
-      }
-    }
-
-    // claudeSessionId が未設定のアクティブセッションに紐づけ
-    for (const session of this.sessions.values()) {
-      if (!session.claudeSessionId && session.status === 'active') {
-        session.claudeSessionId = data.session_id
-        session.status = this.mapHookStatus(data.status)
-        session.lastUpdated = Date.now()
-        session.question = data.question
-        session.lastOutput = data.last_output
-        return session
-      }
-    }
-
-    return null
-  }
-
-  private mapHookStatus(hookStatus: string): Session['status'] {
-    const map: Record<string, Session['status']> = {
-      ai_working: 'ai_working',
-      waiting_input: 'waiting_input',
-      permission_required: 'permission_required',
-      idle: 'idle',
-      terminated: 'terminated',
-    }
-    return map[hookStatus] || 'active'
   }
 
   getAll(): Session[] {
