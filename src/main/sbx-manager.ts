@@ -136,8 +136,35 @@ export class SbxManager {
     }
   }
 
+  // PR URL → ブランチ名解決
+  private resolveBranch(input: string): { branch: string; prNumber: string } {
+    if (input.startsWith('https://github.com/') && input.includes('/pull/')) {
+      const parts = input.split('/pull/')
+      const prNumber = parts[1]?.replace(/\/$/, '') || ''
+      try {
+        const branch = execSync(
+          `gh pr view ${input} --json headRefName -q .headRefName`,
+          { encoding: 'utf-8', timeout: 15000 },
+        ).trim()
+        return { branch, prNumber }
+      } catch {
+        throw new Error(`PR の解決に失敗: ${input}`)
+      }
+    }
+    return { branch: input, prNumber: '' }
+  }
+
   // worktree 作成（ホスト側で git worktree add → sbx からマウント経由でアクセス）
-  createWorktree(repo: string, branch: string, baseBranch?: string): { ok: boolean; wtPath: string; message: string } {
+  createWorktree(repo: string, branchInput: string, baseBranch?: string): { ok: boolean; wtPath: string; message: string } {
+    let branch: string
+    let prNumber: string
+    try {
+      ({ branch, prNumber } = this.resolveBranch(branchInput))
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e)
+      return { ok: false, wtPath: '', message: msg }
+    }
+
     const cfg = loadConfig()
     const cloneBase = expandHome(cfg.sbx?.clone_base || '~/src')
     const repoName = basename(repo)
@@ -160,8 +187,9 @@ export class SbxManager {
     }
 
     const wtBase = expandHome(cfg.worktree?.base || '~/worktrees')
+    const dirPrefix = prNumber ? `pr${prNumber}-` : ''
     const safeBranch = branch.replace(/\//g, '__')
-    const wtPath = join(wtBase, repoName, safeBranch)
+    const wtPath = join(wtBase, repoName, dirPrefix + safeBranch)
 
     if (existsSync(wtPath)) {
       return { ok: true, wtPath, message: `Worktree already exists: ${wtPath}` }

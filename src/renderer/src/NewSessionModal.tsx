@@ -111,6 +111,10 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
     if (!wtRepo || !wtBranch) return []
     const repoName = wtRepo.split('/').pop()
     const wtBase_ = config?.worktreeBase || '~/worktrees'
+    const isPR = wtBranch.startsWith('https://github.com/') && wtBranch.includes('/pull/')
+    if (isPR) {
+      return [`(PR link → ブランチ名を自動解決して worktree 作成)`]
+    }
     const safeBranch = wtBranch.replace(/\//g, '__')
     return [
       `git worktree add ${wtBase_}/${repoName}/${safeBranch}${wtBase ? ` (base: ${wtBase})` : ''}`,
@@ -186,7 +190,17 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
                   )}
                 </label>
                 <label>
-                  Branch
+                  Branch / PR Link
+                  <span className="tooltip-wrap">
+                    <span className="tooltip-icon">?</span>
+                    <span className="tooltip-content">
+                      PR の URL を入力すると自動でブランチ名を解決{'\n'}
+                      1. worktree が既に存在 → そのまま使用{'\n'}
+                      2. origin/branch が存在 → リモートブランチから作成{'\n'}
+                      3. ローカルに branch が存在 → ローカルブランチから作成{'\n'}
+                      4. どちらもない → base branch から新規作成
+                    </span>
+                  </span>
                   <div className="branch-suggest-wrap">
                     <input
                       ref={branchRef}
@@ -196,7 +210,7 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
                       onChange={(e) => { setWtBranch(e.target.value); setShowBranchList(true) }}
                       onFocus={handleBranchFocus}
                       onBlur={() => setTimeout(() => setShowBranchList(false), 200)}
-                      placeholder={branchLoading ? '読み込み中...' : 'e.g. feature/xxx'}
+                      placeholder={branchLoading ? '読み込み中...' : 'e.g. feature/xxx or https://github.com/.../pull/123'}
                     />
                     {showBranchList && filteredBranches.length > 0 && (
                       <div className="branch-suggest-list">

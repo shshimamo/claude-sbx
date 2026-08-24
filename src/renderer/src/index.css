@@ -500,6 +500,49 @@ body {
   font-size: 11px;
 }
 
+/* Tooltip */
+.tooltip-wrap {
+  position: relative;
+  display: inline-block;
+  margin-left: 4px;
+}
+
+.tooltip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--surface1);
+  color: var(--subtext0);
+  font-size: 10px;
+  cursor: help;
+  vertical-align: middle;
+}
+
+.tooltip-content {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  background: var(--crust);
+  border: 1px solid var(--surface1);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--subtext1);
+  white-space: pre-line;
+  width: 320px;
+  z-index: 20;
+}
+
+.tooltip-wrap:hover .tooltip-content {
+  display: block;
+}
+
 /* Branch suggestions */
 .branch-suggest-wrap {
   position: relative;
