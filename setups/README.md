@@ -7,6 +7,8 @@ macOS 上で sbx 内の Claude Code を管理するためのセットアップ�
 - macOS
 - Docker インストール済み
 - sbx CLI インストール済み
+- git インストール済み
+- gh（PR Link から Worktree 作成機能利用時のみ）
 
 ## 1. アプリのインストール
 
