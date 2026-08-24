@@ -3,7 +3,7 @@
     "template": "my-sbx:latest",
     "clone_base": "~/src",
     "post_create_cmds": [
-      ["~/src/claude-tabs-app/setups/sbx-setup.sh"]
+      ["~/src/claude-sbx/setups/sbx-setup.sh"]
     ]
   },
   "worktree": {

@@ -27,21 +27,26 @@ const DEFAULT_CONFIG: Config = {
   },
 }
 
-const DEFAULT_DOCKERFILE = `FROM ubuntu:24.04
+const DEFAULT_DOCKERFILE = `FROM docker/sandbox-templates:claude-code
 
-RUN apt-get update && apt-get install -y \\
-    curl \\
-    git \\
-    gh \\
+USER root
+
+RUN apt-get update && apt-get install -y --no-install-recommends \\
     zsh \\
+    curl \\
+    jq \\
+    make \\
+    vim \\
+    git \\
     && rm -rf /var/lib/apt/lists/*
 
-# Claude Code
-RUN curl -fsSL https://cli.anthropic.com/install.sh | sh
+RUN chsh -s /usr/bin/zsh agent
+
+USER agent
 `
 
 function ensureDefaults(): void {
-  const dir = join(homedir(), '.claude-tabs')
+  const dir = join(homedir(), '.claude-sbx')
   mkdirSync(dir, { recursive: true })
 
   const configPath = join(dir, 'config.json')
@@ -57,7 +62,7 @@ function ensureDefaults(): void {
 
 function loadConfig(): Config {
   try {
-    return JSON.parse(readFileSync(join(homedir(), '.claude-tabs', 'config.json'), 'utf-8'))
+    return JSON.parse(readFileSync(join(homedir(), '.claude-sbx', 'config.json'), 'utf-8'))
   } catch {
     return DEFAULT_CONFIG
   }
@@ -84,7 +89,7 @@ export class SbxManager {
   create(name: string): { ok: boolean; message: string } {
     const cfg = loadConfig()
     const cloneBase = expandHome(cfg.sbx?.clone_base || '~/src')
-    const claudeTabsDir = expandHome('~/.claude-tabs')
+    const claudeTabsDir = expandHome('~/.claude-sbx')
     const paths = [cloneBase, claudeTabsDir]
     if (cfg.worktree?.base) paths.push(expandHome(cfg.worktree.base))
     if (cfg.sbx?.default_mounts) paths.push(...cfg.sbx.default_mounts.map(expandHome))
@@ -103,9 +108,9 @@ export class SbxManager {
       return { ok: false, message: `sbx create failed: ${msg}` }
     }
 
-    // ~/.claude-tabs symlink
+    // ~/.claude-sbx symlink
     try {
-      execSync(`sbx exec ${name} sh -c 'ln -sf ${claudeTabsDir} $HOME/.claude-tabs'`, { timeout: 5000 })
+      execSync(`sbx exec ${name} sh -c 'ln -sf ${claudeTabsDir} $HOME/.claude-sbx'`, { timeout: 5000 })
     } catch { /* ignore */ }
 
     // post-create commands
@@ -306,7 +311,7 @@ export class SbxManager {
     return {
       template: cfg.sbx?.template || 'my-sbx:latest',
       cloneBase: cfg.sbx?.clone_base || '~/src',
-      claudeTabsDir: '~/.claude-tabs',
+      claudeTabsDir: '~/.claude-sbx',
       worktreeBase: cfg.worktree?.base || '',
       mounts: cfg.sbx?.default_mounts || [],
       kits: cfg.sbx?.kits || [],
@@ -316,7 +321,7 @@ export class SbxManager {
 
   // Dockerfile テンプレート
   getDockerfile(): string {
-    const path = join(homedir(), '.claude-tabs', 'Dockerfile')
+    const path = join(homedir(), '.claude-sbx', 'Dockerfile')
     try {
       return readFileSync(path, 'utf-8')
     } catch {
@@ -325,16 +330,31 @@ export class SbxManager {
   }
 
   saveDockerfile(content: string): void {
-    const dir = join(homedir(), '.claude-tabs')
+    const dir = join(homedir(), '.claude-sbx')
     mkdirSync(dir, { recursive: true })
     writeFileSync(join(dir, 'Dockerfile'), content, 'utf-8')
   }
 
+  getConfig(): string {
+    const path = join(homedir(), '.claude-sbx', 'config.json')
+    try {
+      return readFileSync(path, 'utf-8')
+    } catch {
+      return JSON.stringify(DEFAULT_CONFIG, null, 2)
+    }
+  }
+
+  saveConfig(content: string): void {
+    const dir = join(homedir(), '.claude-sbx')
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, 'config.json'), content, 'utf-8')
+  }
+
   buildTemplate(cb: (result: { ok: boolean; message: string }) => void): void {
-    const dockerfilePath = join(homedir(), '.claude-tabs', 'Dockerfile')
+    const dockerfilePath = join(homedir(), '.claude-sbx', 'Dockerfile')
     const cfg = loadConfig()
     const tag = cfg.sbx?.template || 'my-sbx:latest'
-    const dir = join(homedir(), '.claude-tabs')
+    const dir = join(homedir(), '.claude-sbx')
 
     // 非同期で実行（ビルドに時間がかかるため）
     exec(`docker build -t ${tag} -f ${dockerfilePath} ${dir}`, { timeout: 300000 }, (err, _stdout, stderr) => {

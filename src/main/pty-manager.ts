@@ -17,7 +17,7 @@ interface Config {
 
 function loadConfig(): Config {
   try {
-    const data = readFileSync(join(homedir(), '.claude-tabs', 'config.json'), 'utf-8')
+    const data = readFileSync(join(homedir(), '.claude-sbx', 'config.json'), 'utf-8')
     return JSON.parse(data)
   } catch {
     return {}

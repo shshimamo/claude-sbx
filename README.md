@@ -1,4 +1,4 @@
-# claude-tabs-app
+# claude-sbx
 
 sbx 内での Claude Code 利用を制御する Electron デスクトップアプリ。
 
@@ -19,9 +19,9 @@ sbx 内での Claude Code 利用を制御する Electron デスクトップア�
 
 ### 配布版（利用者向け）
 
-[Releases](https://github.com/shshimamo/claude-tabs-app/releases) から `.dmg` をダウンロードしてインストール。
+[Releases](https://github.com/shshimamo/claude-sbx/releases) から `.dmg` をダウンロードしてインストール。
 
-初回起動時に `~/.claude-tabs/config.json` と `~/.claude-tabs/Dockerfile` が自動生成される。
+初回起動時に `~/.claude-sbx/config.json` と `~/.claude-sbx/Dockerfile` が自動生成される。
 
 詳細なセットアップ手順は [setups/](setups/) を参照。
 
@@ -42,7 +42,7 @@ pnpm build
 
 ## config.json
 
-`~/.claude-tabs/config.json` で設定（初回起動時に自動生成、参考: [`examples/config.json`](examples/config.json)）。
+`~/.claude-sbx/config.json` で設定（初回起動時に自動生成、参考: [`examples/config.json`](examples/config.json)）。
 
 | キー | 説明 | デフォルト |
 |------|------|-----------|
@@ -71,7 +71,7 @@ pnpm build
 ## ディレクトリ構成
 
 ```
-claude-tabs-app/
+claude-sbx/
 ├── src/
 │   ├── main/
 │   │   ├── index.ts          # Electron メインプロセス、IPC ハンドラ
@@ -100,7 +100,7 @@ claude-tabs-app/
 ### ランタイムディレクトリ
 
 ```
-~/.claude-tabs/              # 初回起動時に自動生成
+~/.claude-sbx/              # 初回起動時に自動生成
 ├── config.json              # 設定ファイル
 └── Dockerfile               # sbx テンプレート用 Dockerfile
 ```

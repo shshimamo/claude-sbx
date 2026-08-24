@@ -29,6 +29,8 @@ interface Api {
   buildTemplate: () => Promise<{ ok: boolean; message: string }>
   listBranches: (sbxName: string, repoPath: string) => Promise<string[]>
   createWorktree: (repo: string, branch: string, baseBranch?: string) => Promise<{ ok: boolean; wtPath: string; message: string }>
+  getConfig: () => Promise<string>
+  saveConfig: (content: string) => Promise<void>
   getSbxConfig: () => Promise<SbxPreviewConfig>
 }
 

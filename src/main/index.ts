@@ -129,6 +129,16 @@ function setupIPC() {
     })
   })
 
+  // config.json 取得
+  ipcMain.handle('config:get', async () => {
+    return sbxManager.getConfig()
+  })
+
+  // config.json 保存
+  ipcMain.handle('config:save', async (_event, content: string) => {
+    sbxManager.saveConfig(content)
+  })
+
   // プレビュー用 config
   ipcMain.handle('sbx:config', async () => {
     return sbxManager.getPreviewConfig()

@@ -10,11 +10,11 @@ macOS 上で sbx 内の Claude Code を管理するためのセットアップ�
 
 ## 1. アプリのインストール
 
-[Releases](https://github.com/shshimamo/claude-tabs-app/releases) から `.dmg` をダウンロードしてインストール。
+[Releases](https://github.com/shshimamo/claude-sbx/releases) から `.dmg` をダウンロードしてインストール。
 
 ## 2. 初回起動
 
-アプリを起動すると `~/.claude-tabs/` に以下が自動生成される:
+アプリを起動すると `~/.claude-sbx/` に以下が自動生成される:
 
 | ファイル | 説明 |
 |----------|------|
@@ -31,7 +31,7 @@ macOS 上で sbx 内の Claude Code を管理するためのセットアップ�
 
 内部で以下が実行される:
 ```
-docker build -t my-sbx:latest -f ~/.claude-tabs/Dockerfile ~/.claude-tabs/
+docker build -t my-sbx:latest -f ~/.claude-sbx/Dockerfile ~/.claude-sbx/
 docker save my-sbx:latest -o <tmpfile>
 sbx template load <tmpfile>
 ```
@@ -56,7 +56,7 @@ sbx 作成後に自動実行するコマンドを設定可能。参考: [`sbx-se
 ```json
 {
   "sbx": {
-    "post_create_cmds": [["~/src/claude-tabs-app/setups/sbx-setup.sh"]]
+    "post_create_cmds": [["~/src/claude-sbx/setups/sbx-setup.sh"]]
   }
 }
 ```

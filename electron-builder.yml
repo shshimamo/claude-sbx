@@ -1,5 +1,5 @@
-appId: com.shshimamo.claude-tabs-app
-productName: Claude Tabs
+appId: com.shshimamo.claude-sbx
+productName: Claude Sbx
 mac:
   target:
     - target: dmg
@@ -12,4 +12,4 @@ mac:
         - x64
   category: public.app-category.developer-tools
 dmg:
-  title: Claude Tabs
+  title: Claude Sbx

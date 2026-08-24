@@ -4,6 +4,7 @@ import Terminal from './Terminal'
 import NewSessionModal from './NewSessionModal'
 import ManageSbxModal from './ManageSbxModal'
 import DockerfileModal from './DockerfileModal'
+import ConfigModal from './ConfigModal'
 
 export default function App() {
   const [sessions, setSessions] = useState<Session[]>([])
@@ -11,6 +12,7 @@ export default function App() {
   const [showNewSession, setShowNewSession] = useState(false)
   const [showManageSbx, setShowManageSbx] = useState(false)
   const [showDockerfile, setShowDockerfile] = useState(false)
+  const [showConfig, setShowConfig] = useState(false)
 
   useEffect(() => {
     window.api.listSessions().then(setSessions)
@@ -49,6 +51,7 @@ export default function App() {
         onNewSession={() => setShowNewSession(true)}
         onManageSbx={() => setShowManageSbx(true)}
         onDockerfile={() => setShowDockerfile(true)}
+        onConfig={() => setShowConfig(true)}
       />
       <main className="main-content">
         {sessions.map((s) => (
@@ -73,6 +76,9 @@ export default function App() {
       )}
       {showDockerfile && (
         <DockerfileModal onClose={() => setShowDockerfile(false)} />
+      )}
+      {showConfig && (
+        <ConfigModal onClose={() => setShowConfig(false)} />
       )}
     </div>
   )

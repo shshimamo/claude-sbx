@@ -1,11 +1,16 @@
-FROM ubuntu:24.04
+FROM docker/sandbox-templates:claude-code
 
-RUN apt-get update && apt-get install -y \
-    curl \
-    git \
-    gh \
+USER root
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
     zsh \
+    curl \
+    jq \
+    make \
+    vim \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Claude Code
-RUN curl -fsSL https://cli.anthropic.com/install.sh | sh
+RUN chsh -s /usr/bin/zsh agent
+
+USER agent

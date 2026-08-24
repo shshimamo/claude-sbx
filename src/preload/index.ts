@@ -45,6 +45,8 @@ const api = {
     ipcRenderer.invoke('sbx:worktree:create', repo, branch, baseBranch),
 
   // config
+  getConfig: () => ipcRenderer.invoke('config:get'),
+  saveConfig: (content: string) => ipcRenderer.invoke('config:save', content),
   getSbxConfig: () => ipcRenderer.invoke('sbx:config'),
 }
 
