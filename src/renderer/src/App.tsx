@@ -31,6 +31,10 @@ export default function App() {
   }, [])
 
   const handleClose = useCallback(async (id: string) => {
+    const session = sessions.find((s) => s.id === id)
+    if (session && session.status !== 'terminated') {
+      if (!window.confirm('セッションを削除しますか？')) return
+    }
     await window.api.killPty(id)
     setSessions((prev) => {
       const remaining = prev.filter((s) => s.id !== id)
@@ -39,7 +43,7 @@ export default function App() {
       }
       return remaining
     })
-  }, [activeId])
+  }, [activeId, sessions])
 
   return (
     <div className="app">
