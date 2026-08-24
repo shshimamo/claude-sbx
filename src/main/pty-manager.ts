@@ -11,8 +11,7 @@ interface PtySession {
 }
 
 interface Config {
-  sbx?: { clone_base?: string }
-  worktree?: { base?: string }
+  sbx?: { clone_base?: string; worktree_base?: string }
 }
 
 function loadConfig(): Config {
@@ -93,7 +92,7 @@ export class PtyManager {
   listRepos(sbxName: string): { path: string; branch: string }[] {
     const cfg = loadConfig()
     const bases: string[] = []
-    if (cfg.worktree?.base) bases.push(expandHome(cfg.worktree.base))
+    if (cfg.sbx?.worktree_base) bases.push(expandHome(cfg.sbx.worktree_base))
     const cloneBase = cfg.sbx?.clone_base || '~/src'
     bases.push(expandHome(cloneBase))
 

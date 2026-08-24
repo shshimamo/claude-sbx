@@ -40,6 +40,7 @@ export default function Sidebar({ sessions, activeId, onSelect, onClose, onNewSe
       <div className="sidebar-header">
         <h1>Claude Sbx</h1>
         <div className="sidebar-header-actions">
+          <button className="btn-new" onClick={onNewSession}>+</button>
           <div className="gear-wrap" ref={menuRef}>
             <button className="btn-gear" onClick={() => setMenuOpen(!menuOpen)}>&#9881;</button>
             {menuOpen && (
@@ -50,7 +51,6 @@ export default function Sidebar({ sessions, activeId, onSelect, onClose, onNewSe
               </div>
             )}
           </div>
-          <button className="btn-new" onClick={onNewSession}>+</button>
         </div>
       </div>
       <div className="session-list">
