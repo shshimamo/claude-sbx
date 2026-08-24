@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 
-type Mode = 'existing' | 'worktree'
+type Mode = 'existing' | 'worktree' | 'shell'
 
 interface Props {
   onClose: () => void
-  onCreate: (sbx: string, repoPath: string) => void
+  onCreate: (sbx: string, repoPath: string, shell?: string) => void
 }
 
 export default function NewSessionModal({ onClose, onCreate }: Props) {
@@ -16,8 +16,9 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
   const [loadingRepos, setLoadingRepos] = useState(false)
   const [config, setConfig] = useState<SbxPreviewConfig | null>(null)
 
-  // existing mode
+  // existing / shell mode
   const [selectedRepo, setSelectedRepo] = useState('')
+  const [shellCmd, setShellCmd] = useState('zsh')
 
   // worktree mode
   const [wtRepo, setWtRepo] = useState('')
@@ -89,6 +90,12 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
     }
   }
 
+  const handleSubmitShell = () => {
+    if (selectedSbx && selectedRepo) {
+      onCreate(selectedSbx, selectedRepo, shellCmd)
+    }
+  }
+
   const handleSubmitWorktree = async () => {
     if (!selectedSbx || !wtRepo || !wtBranch) return
     setCreating(true)
@@ -108,6 +115,10 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
       if (!selectedRepo) return []
       return [`sbx exec -it ${selectedSbx} sh -c 'cd ${selectedRepo} && claude'`]
     }
+    if (mode === 'shell') {
+      if (!selectedRepo) return []
+      return [`sbx exec -it ${selectedSbx} sh -c 'cd ${selectedRepo} && ${shellCmd}'`]
+    }
     if (!wtRepo || !wtBranch) return []
     const repoName = wtRepo.split('/').pop()
     const wtBase_ = config?.worktreeBase || '~/worktrees'
@@ -120,11 +131,17 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
       `git worktree add ${wtBase_}/${repoName}/${safeBranch}${wtBase ? ` (base: ${wtBase})` : ''}`,
       `sbx exec -it ${selectedSbx} sh -c 'cd ${wtBase_}/${repoName}/${safeBranch} && claude'`,
     ]
-  }, [selectedSbx, mode, selectedRepo, wtRepo, wtBranch, wtBase, config])
+  }, [selectedSbx, mode, selectedRepo, shellCmd, wtRepo, wtBranch, wtBase, config])
 
-  const canSubmit = mode === 'existing'
-    ? selectedSbx && selectedRepo
-    : selectedSbx && wtRepo && wtBranch
+  const canSubmit = mode === 'worktree'
+    ? selectedSbx && wtRepo && wtBranch
+    : selectedSbx && selectedRepo
+
+  const handleSubmit = mode === 'existing'
+    ? handleSubmitExisting
+    : mode === 'shell'
+      ? handleSubmitShell
+      : handleSubmitWorktree
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -156,24 +173,43 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
               >
                 New worktree
               </button>
+              <button
+                className={`mode-tab ${mode === 'shell' ? 'mode-tab-active' : ''}`}
+                onClick={() => setMode('shell')}
+              >
+                Shell
+              </button>
             </div>
 
-            {mode === 'existing' ? (
-              <label>
-                Repository
-                {loadingRepos ? (
-                  <p className="loading-text">リポジトリ取得中...</p>
-                ) : (
-                  <select value={selectedRepo} onChange={(e) => setSelectedRepo(e.target.value)}>
-                    {repos.map((r) => (
-                      <option key={r.path} value={r.path}>
-                        {r.path.split('/').pop()} {r.branch && `(${r.branch})`}
-                      </option>
-                    ))}
-                  </select>
+            {(mode === 'existing' || mode === 'shell') && (
+              <>
+                <label>
+                  Repository
+                  {loadingRepos ? (
+                    <p className="loading-text">リポジトリ取得中...</p>
+                  ) : (
+                    <select value={selectedRepo} onChange={(e) => setSelectedRepo(e.target.value)}>
+                      {repos.map((r) => (
+                        <option key={r.path} value={r.path}>
+                          {r.path.split('/').pop()} {r.branch && `(${r.branch})`}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </label>
+                {mode === 'shell' && (
+                  <label>
+                    Shell
+                    <select value={shellCmd} onChange={(e) => setShellCmd(e.target.value)}>
+                      <option value="zsh">zsh</option>
+                      <option value="bash">bash</option>
+                    </select>
+                  </label>
                 )}
-              </label>
-            ) : (
+              </>
+            )}
+
+            {mode === 'worktree' && (
               <>
                 <label>
                   Repository
@@ -264,7 +300,7 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
               <button onClick={onClose}>キャンセル</button>
               <button
                 className="btn-primary"
-                onClick={mode === 'existing' ? handleSubmitExisting : handleSubmitWorktree}
+                onClick={handleSubmit}
                 disabled={!canSubmit || creating}
               >
                 {creating ? '作成中...' : '作成'}

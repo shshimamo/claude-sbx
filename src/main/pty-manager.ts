@@ -32,19 +32,19 @@ export class PtyManager {
   private sessions = new Map<string, PtySession>()
   private counter = 0
 
-  create(sbx: string, repoPath: string): string {
+  create(sbx: string, repoPath: string, shell?: string): string {
     const id = `session-${Date.now()}-${++this.counter}`
-    const shell = process.env.SHELL || '/bin/zsh'
+    const loginShell = process.env.SHELL || '/bin/zsh'
 
-    const proc = pty.spawn(shell, [], {
+    const proc = pty.spawn(loginShell, [], {
       name: 'xterm-256color',
       cols: 120,
       rows: 30,
       env: { ...process.env, TERM: 'xterm-256color' },
     })
 
-    // sbx 内でリポジトリに移動して claude 起動
-    const cmd = `sbx exec -it ${sbx} sh -c 'cd ${repoPath} && claude'`
+    const execCmd = shell || 'claude'
+    const cmd = `sbx exec -it ${sbx} sh -c 'cd ${repoPath} && ${execCmd}'`
     proc.write(cmd + '\r')
 
     this.sessions.set(id, { process: proc, sbx, repoPath })

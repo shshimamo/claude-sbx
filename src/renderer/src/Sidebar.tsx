@@ -65,7 +65,7 @@ export default function Sidebar({ sessions, activeId, onSelect, onClose, onNewSe
               <span className="status-dot" style={{ background: st.color }} />
               <div className="session-info">
                 <div className="session-name">{s.repoPath.split('/').pop()}</div>
-                <div className="session-meta">{s.sbx} &middot; {st.label}</div>
+                <div className="session-meta">{s.sbx} &middot; {s.shell || st.label}</div>
               </div>
               <button
                 className="btn-close"

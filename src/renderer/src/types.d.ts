@@ -2,6 +2,7 @@ interface Session {
   id: string
   sbx: string
   repoPath: string
+  shell?: string
   status: 'active' | 'ai_working' | 'waiting_input' | 'permission_required' | 'idle' | 'terminated'
   createdAt: number
   lastUpdated: number
@@ -11,7 +12,7 @@ interface Session {
 }
 
 interface Api {
-  createPty: (opts: { sbx: string; repoPath: string }) => Promise<Session>
+  createPty: (opts: { sbx: string; repoPath: string; shell?: string }) => Promise<Session>
   writePty: (id: string, data: string) => void
   resizePty: (id: string, cols: number, rows: number) => void
   killPty: (id: string) => Promise<void>

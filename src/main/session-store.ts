@@ -2,6 +2,7 @@ export interface Session {
   id: string
   sbx: string
   repoPath: string
+  shell?: string
   status: 'active' | 'ai_working' | 'waiting_input' | 'permission_required' | 'idle' | 'terminated'
   createdAt: number
   lastUpdated: number
@@ -13,11 +14,12 @@ export interface Session {
 export class SessionStore {
   private sessions = new Map<string, Session>()
 
-  createSession(id: string, sbx: string, repoPath: string): Session {
+  createSession(id: string, sbx: string, repoPath: string, shell?: string): Session {
     const session: Session = {
       id,
       sbx,
       repoPath,
+      shell,
       status: 'active',
       createdAt: Date.now(),
       lastUpdated: Date.now(),

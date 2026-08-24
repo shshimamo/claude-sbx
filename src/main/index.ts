@@ -37,9 +37,9 @@ function createWindow() {
 
 function setupIPC() {
   // pty 作成: sbx exec → claude 起動
-  ipcMain.handle('pty:create', async (_event, opts: { sbx: string; repoPath: string }) => {
-    const id = ptyManager.create(opts.sbx, opts.repoPath)
-    const session = sessionStore.createSession(id, opts.sbx, opts.repoPath)
+  ipcMain.handle('pty:create', async (_event, opts: { sbx: string; repoPath: string; shell?: string }) => {
+    const id = ptyManager.create(opts.sbx, opts.repoPath, opts.shell)
+    const session = sessionStore.createSession(id, opts.sbx, opts.repoPath, opts.shell)
 
     // pty 出力をバッファ or レンダラーに転送
     ptyBuffers.set(id, [])

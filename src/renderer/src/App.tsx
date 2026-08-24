@@ -20,8 +20,8 @@ export default function App() {
     return unsub
   }, [])
 
-  const handleCreate = useCallback(async (sbx: string, repoPath: string) => {
-    const session = await window.api.createPty({ sbx, repoPath })
+  const handleCreate = useCallback(async (sbx: string, repoPath: string, shell?: string) => {
+    const session = await window.api.createPty({ sbx, repoPath, shell })
     setSessions((prev) => {
       if (prev.some((s) => s.id === session.id)) return prev
       return [...prev, session]
