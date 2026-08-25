@@ -19,8 +19,14 @@ interface SbxConfig {
   plugins?: PluginConfig[]
 }
 
+interface NotificationConfig {
+  pattern: string
+  title: string
+}
+
 interface Config {
   sbx?: SbxConfig
+  notifications?: NotificationConfig[]
 }
 
 const DEFAULT_CONFIG: Config = {
@@ -358,6 +364,11 @@ export class SbxManager {
       postCreateCmds: cfg.sbx?.post_create_cmds || [],
       plugins: cfg.sbx?.plugins || [],
     }
+  }
+
+  getNotifications(): NotificationConfig[] {
+    const cfg = loadConfig()
+    return cfg.notifications || []
   }
 
   // Dockerfile テンプレート

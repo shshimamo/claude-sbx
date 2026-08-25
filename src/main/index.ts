@@ -1,8 +1,32 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, Notification, clipboard } from 'electron'
 import { join } from 'path'
 import { PtyManager } from './pty-manager'
 import { SessionStore } from './session-store'
 import { SbxManager } from './sbx-manager'
+
+// eslint-disable-next-line no-control-regex
+const ANSI_RE = /\x1b\[[0-9;]*[a-zA-Z]|\x1b\].*?(\x07|\x1b\\)/g
+
+function stripAnsi(s: string): string {
+  return s.replace(ANSI_RE, '')
+}
+
+function checkNotifications(id: string, data: string): void {
+  const patterns = sbxManager.getNotifications()
+  if (patterns.length === 0) return
+
+  const text = stripAnsi(data)
+  const session = sessionStore.get(id)
+  for (const { pattern, title } of patterns) {
+    if (text.includes(pattern)) {
+      new Notification({
+        title,
+        body: session?.name || id,
+      }).show()
+      break
+    }
+  }
+}
 
 let mainWindow: BrowserWindow | null = null
 const sessionStore = new SessionStore()
@@ -26,6 +50,7 @@ function createWindow() {
     backgroundColor: '#1e1e2e',
   })
 
+
   if (process.env.ELECTRON_RENDERER_URL) {
     mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   } else {
@@ -42,6 +67,7 @@ function setupIPC() {
     // pty 出力をバッファ or レンダラーに転送
     ptyBuffers.set(id, [])
     ptyManager.onData(id, (data) => {
+      checkNotifications(id, data)
       if (ptyReady.has(id)) {
         mainWindow?.webContents.send('pty:data', id, data)
       } else {
@@ -172,6 +198,58 @@ function fixPath() {
 
 app.whenReady().then(() => {
   fixPath()
+
+  // デフォルトメニューの Cmd+C/V を除去して xterm.js 側で処理させる
+  const menu = Menu.buildFromTemplate([
+    {
+      label: app.name,
+      submenu: [
+        { role: 'about' },
+        { type: 'separator' },
+        { role: 'hide' },
+        { role: 'hideOthers' },
+        { role: 'unhide' },
+        { type: 'separator' },
+        { role: 'quit' },
+      ],
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { type: 'separator' },
+        { role: 'selectAll' },
+      ],
+    },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forceReload' },
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { role: 'togglefullscreen' },
+      ],
+    },
+    {
+      label: 'Window',
+      submenu: [
+        { role: 'minimize' },
+        { role: 'zoom' },
+        { role: 'close' },
+      ],
+    },
+  ])
+  Menu.setApplicationMenu(menu)
+
   setupIPC()
   createWindow()
 

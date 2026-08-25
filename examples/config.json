@@ -19,5 +19,8 @@
     "post_create_cmds": [
       ["~/src/claude-sbx/examples/sbx-setup.sh"]
     ]
-  }
+  },
+  "notifications": [
+    { "pattern": "Do you want to allow Claude to", "title": "許可待ち" }
+  ]
 }

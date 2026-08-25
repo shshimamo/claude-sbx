@@ -54,6 +54,25 @@ export default function Terminal({ sessionId, active }: Props) {
     xterm.open(containerRef.current)
     fitAddon.fit()
 
+    // OSC 52 (クリップボード書き込み) をハンドリング
+    xterm.parser.registerOscHandler(52, (data) => {
+      const parts = data.split(';')
+      if (parts.length >= 2 && parts[1]) {
+        try {
+          const text = atob(parts[1])
+          window.api.clipboardWrite(text)
+        } catch { /* ignore invalid base64 */ }
+      }
+      return true
+    })
+
+    // テキスト選択時に自動でクリップボードにコピー
+    xterm.onSelectionChange(() => {
+      if (xterm.hasSelection()) {
+        window.api.clipboardWrite(xterm.getSelection())
+      }
+    })
+
     // ユーザー入力を pty に送信
     xterm.onData((data) => {
       window.api.writePty(sessionId, data)

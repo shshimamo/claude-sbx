@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, clipboard } from 'electron'
 
 const api = {
   // pty
@@ -50,6 +50,22 @@ const api = {
   getConfig: () => ipcRenderer.invoke('config:get'),
   saveConfig: (content: string) => ipcRenderer.invoke('config:save', content),
   getSbxConfig: () => ipcRenderer.invoke('sbx:config'),
+
+  // clipboard
+  clipboardWrite: (text: string) => clipboard.writeText(text),
+  clipboardRead: () => clipboard.readText(),
+
+  // terminal copy/paste from main
+  onTerminalCopy: (cb: () => void) => {
+    const listener = () => cb()
+    ipcRenderer.on('terminal:copy', listener)
+    return () => ipcRenderer.removeListener('terminal:copy', listener)
+  },
+  onTerminalPaste: (cb: (text: string) => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, text: string) => cb(text)
+    ipcRenderer.on('terminal:paste', listener)
+    return () => ipcRenderer.removeListener('terminal:paste', listener)
+  },
 }
 
 contextBridge.exposeInMainWorld('api', api)
