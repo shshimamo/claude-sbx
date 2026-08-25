@@ -382,6 +382,11 @@ body {
   color: var(--red);
 }
 
+.message-info {
+  background: rgba(137, 180, 250, 0.15);
+  color: var(--blue);
+}
+
 /* sbx management */
 .sbx-create-row {
   display: flex;

@@ -33,9 +33,10 @@ export default function DockerfileModal({ onClose }: Props) {
     setBuilding(false)
   }
 
-  const buildCommands = config ? [
-    `docker build -t ${config.template} -f ~/.claude-sbx/Dockerfile ~/.claude-sbx/`,
-    `docker save ${config.template} -o <tmpfile>`,
+  const hasTemplate = !!config?.template
+  const buildCommands = hasTemplate ? [
+    `docker build -t ${config!.template} -f ~/.claude-sbx/Dockerfile ~/.claude-sbx/`,
+    `docker save ${config!.template} -o <tmpfile>`,
     `sbx template load <tmpfile>`,
   ] : []
 
@@ -61,6 +62,12 @@ export default function DockerfileModal({ onClose }: Props) {
           />
         )}
 
+        {!hasTemplate && config && (
+          <div className="message message-info">
+            ビルド & ロードするには Config で template を設定してください
+          </div>
+        )}
+
         {buildCommands.length > 0 && (
           <div className="command-preview">
             <div className="command-preview-label">BUILD COMMANDS</div>
@@ -73,7 +80,7 @@ export default function DockerfileModal({ onClose }: Props) {
         <div className="modal-actions">
           <button onClick={onClose}>閉じる</button>
           <button onClick={handleSave} disabled={loading}>保存</button>
-          <button className="btn-primary" onClick={handleBuild} disabled={building || loading}>
+          <button className="btn-primary" onClick={handleBuild} disabled={building || loading || !hasTemplate}>
             {building ? 'ビルド中...' : 'ビルド & ロード'}
           </button>
         </div>
