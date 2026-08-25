@@ -103,8 +103,8 @@ function setupIPC() {
   })
 
   // sbx 内のリポジトリ一覧取得
-  ipcMain.handle('sbx:repos', async (_event, sbxName: string) => {
-    return sbxManager.listRepos(sbxName)
+  ipcMain.handle('sbx:repos', async (_event, sbxName: string, noCache?: boolean) => {
+    return sbxManager.listRepos(sbxName, noCache)
   })
 
   // sbx 作成

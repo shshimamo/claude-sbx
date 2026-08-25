@@ -76,6 +76,8 @@ function expandHome(p: string): string {
 }
 
 export class SbxManager {
+  private repoCache = new Map<string, { path: string; branch: string }[]>()
+
   constructor() {
     ensureDefaults()
   }
@@ -171,7 +173,11 @@ export class SbxManager {
     }
   }
 
-  listRepos(sbxName: string): { path: string; branch: string }[] {
+  listRepos(sbxName: string, noCache = false): { path: string; branch: string }[] {
+    if (!noCache && this.repoCache.has(sbxName)) {
+      return this.repoCache.get(sbxName)!
+    }
+
     const cfg = loadConfig()
     const bases: string[] = []
     if (cfg.sbx?.worktree_base) bases.push(expandHome(cfg.sbx.worktree_base!))
@@ -198,6 +204,7 @@ export class SbxManager {
         }
       } catch { /* ignore */ }
     }
+    this.repoCache.set(sbxName, repos)
     return repos
   }
 

@@ -21,7 +21,7 @@ interface Api {
   listSessions: () => Promise<Session[]>
   onSessionsUpdated: (cb: (sessions: Session[]) => void) => () => void
   listSbx: () => Promise<string[]>
-  listRepos: (sbxName: string) => Promise<{ path: string; branch: string }[]>
+  listRepos: (sbxName: string, noCache?: boolean) => Promise<{ path: string; branch: string }[]>
   createSbx: (name: string) => Promise<{ ok: boolean; message: string }>
   deleteSbx: (name: string) => Promise<{ ok: boolean; message: string }>
   getDockerfile: () => Promise<string>

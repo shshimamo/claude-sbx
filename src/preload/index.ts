@@ -31,7 +31,7 @@ const api = {
 
   // sbx
   listSbx: () => ipcRenderer.invoke('sbx:list'),
-  listRepos: (sbxName: string) => ipcRenderer.invoke('sbx:repos', sbxName),
+  listRepos: (sbxName: string, noCache?: boolean) => ipcRenderer.invoke('sbx:repos', sbxName, noCache),
   createSbx: (name: string) => ipcRenderer.invoke('sbx:create', name),
   deleteSbx: (name: string) => ipcRenderer.invoke('sbx:delete', name),
 

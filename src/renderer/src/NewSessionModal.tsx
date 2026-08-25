@@ -49,7 +49,7 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
     setWtRepo('')
     setBranchList([])
     setLoadingRepos(true)
-    window.api.listRepos(selectedSbx).then((list) => {
+    window.api.listRepos(selectedSbx, false).then((list) => {
       setRepos(list)
       if (list.length > 0) {
         setSelectedRepo(list[0].path)
@@ -58,6 +58,19 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
       setLoadingRepos(false)
     })
   }, [selectedSbx])
+
+  const reloadRepos = () => {
+    if (!selectedSbx) return
+    setLoadingRepos(true)
+    window.api.listRepos(selectedSbx, true).then((list) => {
+      setRepos(list)
+      if (list.length > 0) {
+        setSelectedRepo(list[0].path)
+        setWtRepo(list[0].path)
+      }
+      setLoadingRepos(false)
+    })
+  }
 
   // リポジトリ変更時にブランチリストをリセット
   useEffect(() => {
@@ -184,7 +197,10 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
             {(mode === 'existing' || mode === 'shell') && (
               <>
                 <label>
-                  Repository
+                  <span className="label-with-reload">
+                    Repository
+                    <button className="btn-reload" onClick={reloadRepos} disabled={loadingRepos} title="リロード">↻</button>
+                  </span>
                   {loadingRepos ? (
                     <p className="loading-text">リポジトリ取得中...</p>
                   ) : (
@@ -212,7 +228,10 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
             {mode === 'worktree' && (
               <>
                 <label>
-                  Repository
+                  <span className="label-with-reload">
+                    Repository
+                    <button className="btn-reload" onClick={reloadRepos} disabled={loadingRepos} title="リロード">↻</button>
+                  </span>
                   {loadingRepos ? (
                     <p className="loading-text">リポジトリ取得中...</p>
                   ) : (

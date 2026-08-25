@@ -387,6 +387,31 @@ body {
   color: var(--blue);
 }
 
+.label-with-reload {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-reload {
+  background: none;
+  border: none;
+  color: var(--subtext0);
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.btn-reload:hover:not(:disabled) {
+  color: var(--blue);
+}
+
+.btn-reload:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 /* sbx management */
 .sbx-create-row {
   display: flex;
