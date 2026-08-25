@@ -3,6 +3,7 @@ import { join } from 'path'
 import { PtyManager } from './pty-manager'
 import { SessionStore } from './session-store'
 import { SbxManager } from './sbx-manager'
+import { HookWatcher } from './hook-watcher'
 
 // eslint-disable-next-line no-control-regex
 const ANSI_RE = /\x1b\[[0-9;]*[a-zA-Z]|\x1b\].*?(\x07|\x1b\\)/g
@@ -32,6 +33,7 @@ let mainWindow: BrowserWindow | null = null
 const sessionStore = new SessionStore()
 const ptyManager = new PtyManager()
 const sbxManager = new SbxManager()
+const hookWatcher = new HookWatcher()
 // pty 出力バッファ（レンダラー準備完了前のデータを保持）
 const ptyBuffers = new Map<string, string[]>()
 const ptyReady = new Set<string>()
@@ -252,12 +254,20 @@ app.whenReady().then(() => {
   setupIPC()
   createWindow()
 
+  // hook 通知の監視開始
+  const hookEvents = sbxManager.getHookNotificationEvents()
+  if (hookEvents.length > 0) {
+    hookWatcher.setEvents(hookEvents)
+    hookWatcher.start()
+  }
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
 
 app.on('window-all-closed', () => {
+  hookWatcher.stop()
   ptyManager.killAll()
   if (process.platform !== 'darwin') app.quit()
 })

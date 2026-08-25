@@ -61,6 +61,54 @@ pnpm build
 | `sbx.kits` | sbx 作成時に適用する kit | `[]` |
 | `sbx.plugins` | Claude plugins 設定（`[{"source": "...", "plugins": ["..."]}]`） | `[]` |
 | `sbx.post_create_cmds` | sbx 作成後に実行するコマンド（`[["cmd", "arg"], ...]`） | `[]` |
+| `hook_notifications.events` | 通知するイベント（下記参照） | `[]` |
+
+### hook_notifications.events
+
+| イベント | タイミング |
+|---------|-----------|
+| `Stop` | Claude がタスクを完了して停止した時 |
+| `PermissionRequest` | ツール実行の許可を求めている時 |
+| `AskUserQuestion` | Claude がユーザーに質問している時 |
+| `SessionStart` | Claude セッションが開始した時 |
+| `SessionEnd` | Claude セッションが終了した時 |
+| `UserPromptSubmit` | ユーザーがプロンプトを送信した時 |
+| `PostToolUse` | ツール実行が完了した時 |
+
+推奨: `["Stop", "PermissionRequest", "AskUserQuestion"]`
+
+## 通知の有効化（hook_notifications）
+
+Claude Code の hook を利用してタスク完了・許可待ちなどを macOS 通知で受け取れる。
+
+### セットアップ
+
+1. `setup_hooks.sh` を `~/.claude-sbx/` にコピー（`examples/post_create_cmds/setup_hooks.sh` を参照）
+2. config.json の `post_create_cmds` に `setup_hooks.sh` を追加
+3. config.json に `hook_notifications` を設定
+
+```json
+{
+  "sbx": {
+    "post_create_cmds": [
+      ["~/.claude-sbx/setup_hooks.sh"]
+    ]
+  },
+  "hook_notifications": {
+    "events": ["Stop", "PermissionRequest", "AskUserQuestion"]
+  }
+}
+```
+
+`~/.claude-sbx` は sbx 作成時に自動マウントされる。
+
+4. sbx を新規作成すると `setup_hooks.sh` が自動実行され、sbx 内の `~/.claude/settings.json` に hooks が設定される
+
+既存の sbx に後から設定する場合は手動実行:
+
+```sh
+sbx exec <name> /Users/<user>/.claude-sbx/setup_hooks.sh
+```
 
 ## アーキテクチャ
 

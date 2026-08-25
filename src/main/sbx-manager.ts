@@ -24,9 +24,14 @@ interface NotificationConfig {
   title: string
 }
 
+interface HookNotificationConfig {
+  events: string[]
+}
+
 interface Config {
   sbx?: SbxConfig
   notifications?: NotificationConfig[]
+  hook_notifications?: HookNotificationConfig
 }
 
 const DEFAULT_CONFIG: Config = {
@@ -100,7 +105,8 @@ export class SbxManager {
   create(name: string): { ok: boolean; message: string } {
     const cfg = loadConfig()
     const cloneBase = expandHome(cfg.sbx?.clone_base || '~/src')
-    const paths = [cloneBase]
+    const sbxDir = join(homedir(), '.claude-sbx')
+    const paths = [cloneBase, sbxDir]
     if (cfg.sbx?.worktree_base) paths.push(expandHome(cfg.sbx.worktree_base!))
     if (cfg.sbx?.mounts) paths.push(...cfg.sbx.mounts.map(expandHome))
 
@@ -369,6 +375,11 @@ export class SbxManager {
   getNotifications(): NotificationConfig[] {
     const cfg = loadConfig()
     return cfg.notifications || []
+  }
+
+  getHookNotificationEvents(): string[] {
+    const cfg = loadConfig()
+    return cfg.hook_notifications?.events || []
   }
 
   // Dockerfile テンプレート

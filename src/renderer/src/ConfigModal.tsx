@@ -17,7 +17,7 @@ export default function ConfigModal({ onClose }: Props) {
   }, [])
 
   const validateKeys = (obj: Record<string, unknown>): string[] => {
-    const topAllowed = new Set(['sbx', 'notifications'])
+    const topAllowed = new Set(['sbx', 'notifications', 'hook_notifications'])
     const sbxAllowed = new Set([
       'template', 'clone_base', 'worktree_base',
       'mounts', 'kits', 'post_create_cmds', 'plugins',
