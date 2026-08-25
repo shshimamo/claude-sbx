@@ -5,8 +5,8 @@ macOS 上で sbx 内の Claude Code を管理するためのセットアップ�
 ## 前提
 
 - macOS
-- Docker インストール済み
 - sbx CLI インストール済み
+- Docker（`template` 設定時のみ）
 - git インストール済み
 - gh（PR Link から Worktree 作成機能利用時のみ）
 
@@ -31,22 +31,7 @@ xattr -cr /Applications/Claude\ Sbx.app
 
 歯車メニュー > **Config** から設定を編集可能（設定項目は [README.md](../README.md#configjson) を参照）。
 
-## 3. sbx テンプレートのビルド（初回のみ）
-
-1. 歯車メニュー > **Dockerfile** をクリック
-2. Dockerfile を確認（デフォルトのままでも動作する）
-3. **ビルド & ロード** ボタンをクリック
-
-内部で以下が実行される:
-```
-docker build -t my-sbx:latest -f ~/.claude-sbx/Dockerfile ~/.claude-sbx/
-docker save my-sbx:latest -o <tmpfile>
-sbx template load <tmpfile>
-```
-
-テンプレートを変更したい場合は Dockerfile を編集して再度ビルドするだけ。
-
-## 4. 使い方
+## 3. 使い方
 
 1. **sbx 管理**: 歯車メニュー > 「sbx 管理」で sbx を作成
 2. **新規セッション**: 「+」ボタンで sbx とリポジトリを選択し、Claude を起動
@@ -65,4 +50,5 @@ sbx template load <tmpfile>
 | `sbx.post_create_cmds` | sbx 作成後にコマンドを実行したい場合 |
 | `sbx.plugins` | Claude plugins を設定したい場合 |
 | `sbx.kits` | kits を設定したい場合 |
+| `sbx.template` | カスタムテンプレートを使いたい場合（Docker 必要） |
 | `sbx.mounts` | `clone_base` / `worktree_base` 以外をマウントしたい場合 |

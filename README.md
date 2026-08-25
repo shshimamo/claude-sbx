@@ -54,7 +54,7 @@ pnpm build
 
 | キー | 説明 | デフォルト |
 |------|------|-----------|
-| `sbx.template` | sbx テンプレート名 | `my-sbx:latest` |
+| `sbx.template` | sbx テンプレート名（未設定ならデフォルト、Docker 必要） | なし |
 | `sbx.clone_base` | リポジトリ検索・sbx マウントのベースディレクトリ | `~/src` |
 | `sbx.worktree_base` | Worktree 保存先 | `~/worktrees` |
 | `sbx.mounts` | sbx 作成時の追加マウント（`~` 展開可） | `[]` |
@@ -118,7 +118,7 @@ claude-sbx/
 | ツール | 用途 | 必須 |
 |--------|------|------|
 | sbx | サンドボックス環境 | ○ |
-| Docker | sbx テンプレートビルド | テンプレートビルド時 |
+| Docker | sbx テンプレートビルド | `template` 設定時のみ |
 | git | Worktree 作成 | Worktree 機能使用時 |
 | gh | PR Link からブランチ解決 | PR Link 使用時 |
 
