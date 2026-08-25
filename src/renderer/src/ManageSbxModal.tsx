@@ -54,7 +54,8 @@ export default function ManageSbxModal({ onClose }: Props) {
     if (config.worktreeBase) paths.push(config.worktreeBase)
     paths.push(...config.mounts)
 
-    const args = ['create', '--name', name, '-t', config.template]
+    const args = ['create', '--name', name]
+    if (config.template) args.push('-t', config.template)
     for (const kit of config.kits) args.push('--kit', kit)
     args.push('claude', ...paths)
 

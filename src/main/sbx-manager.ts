@@ -25,7 +25,6 @@ interface Config {
 
 const DEFAULT_CONFIG: Config = {
   sbx: {
-    template: 'my-sbx:latest',
     clone_base: '~/src',
     worktree_base: '~/worktrees',
   },
@@ -97,8 +96,8 @@ export class SbxManager {
     if (cfg.sbx?.worktree_base) paths.push(expandHome(cfg.sbx.worktree_base!))
     if (cfg.sbx?.mounts) paths.push(...cfg.sbx.mounts.map(expandHome))
 
-    const template = cfg.sbx?.template || 'my-sbx:latest'
-    const args = ['create', '--name', name, '-t', template]
+    const args = ['create', '--name', name]
+    if (cfg.sbx?.template) args.push('-t', cfg.sbx.template)
     if (cfg.sbx?.kits) {
       for (const kit of cfg.sbx.kits) args.push('--kit', kit)
     }
@@ -344,7 +343,7 @@ export class SbxManager {
   } {
     const cfg = loadConfig()
     return {
-      template: cfg.sbx?.template || 'my-sbx:latest',
+      template: cfg.sbx?.template || '',
       cloneBase: cfg.sbx?.clone_base || '~/src',
       worktreeBase: cfg.sbx?.worktree_base || '',
       mounts: cfg.sbx?.mounts || [],
@@ -388,7 +387,11 @@ export class SbxManager {
   buildTemplate(cb: (result: { ok: boolean; message: string }) => void): void {
     const dockerfilePath = join(homedir(), '.claude-sbx', 'Dockerfile')
     const cfg = loadConfig()
-    const tag = cfg.sbx?.template || 'my-sbx:latest'
+    const tag = cfg.sbx?.template
+    if (!tag) {
+      cb({ ok: false, message: 'config.json に sbx.template を設定してください' })
+      return
+    }
     const dir = join(homedir(), '.claude-sbx')
 
     // 非同期で実行（ビルドに時間がかかるため）
