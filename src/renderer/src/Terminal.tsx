@@ -59,7 +59,8 @@ export default function Terminal({ sessionId, active }: Props) {
       const parts = data.split(';')
       if (parts.length >= 2 && parts[1]) {
         try {
-          const text = atob(parts[1])
+          const bytes = Uint8Array.from(atob(parts[1]), c => c.charCodeAt(0))
+          const text = new TextDecoder().decode(bytes)
           window.api.clipboardWrite(text)
         } catch { /* ignore invalid base64 */ }
       }

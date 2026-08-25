@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, Notification, clipboard } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, Notification } from 'electron'
 import { join } from 'path'
 import { PtyManager } from './pty-manager'
 import { SessionStore } from './session-store'
@@ -49,7 +49,6 @@ function createWindow() {
     titleBarStyle: 'hiddenInset',
     backgroundColor: '#1e1e2e',
   })
-
 
   if (process.env.ELECTRON_RENDERER_URL) {
     mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
@@ -199,7 +198,7 @@ function fixPath() {
 app.whenReady().then(() => {
   fixPath()
 
-  // デフォルトメニューの Cmd+C/V を除去して xterm.js 側で処理させる
+  // アプリケーションメニュー
   const menu = Menu.buildFromTemplate([
     {
       label: app.name,

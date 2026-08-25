@@ -33,9 +33,6 @@ interface Api {
   saveConfig: (content: string) => Promise<void>
   getSbxConfig: () => Promise<SbxPreviewConfig>
   clipboardWrite: (text: string) => void
-  clipboardRead: () => string
-  onTerminalCopy: (cb: () => void) => () => void
-  onTerminalPaste: (cb: (text: string) => void) => () => void
 }
 
 interface SbxPreviewConfig {
