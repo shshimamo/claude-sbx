@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Terminal as XTerm } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
+import { SearchAddon } from '@xterm/addon-search'
 import '@xterm/xterm/css/xterm.css'
 
 interface Props {
@@ -33,10 +34,12 @@ const theme = {
   brightWhite: '#a6adc8',
 }
 
-const terminals = new Map<string, { xterm: XTerm; fitAddon: FitAddon }>()
+const terminals = new Map<string, { xterm: XTerm; fitAddon: FitAddon; searchAddon: SearchAddon }>()
 
 export default function Terminal({ sessionId, active }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
+  const [showSearch, setShowSearch] = useState(false)
 
   // xterm 初期化（1回だけ）
   useEffect(() => {
@@ -50,7 +53,9 @@ export default function Terminal({ sessionId, active }: Props) {
       cursorBlink: true,
     })
     const fitAddon = new FitAddon()
+    const searchAddon = new SearchAddon()
     xterm.loadAddon(fitAddon)
+    xterm.loadAddon(searchAddon)
     xterm.open(containerRef.current)
     fitAddon.fit()
 
@@ -84,7 +89,7 @@ export default function Terminal({ sessionId, active }: Props) {
       window.api.resizePty(sessionId, cols, rows)
     })
 
-    terminals.set(sessionId, { xterm, fitAddon })
+    terminals.set(sessionId, { xterm, fitAddon, searchAddon })
   }, [sessionId])
 
   // pty データリスナー（StrictMode で再登録されても正しく動く）
@@ -115,6 +120,53 @@ export default function Terminal({ sessionId, active }: Props) {
     }
   }, [active, sessionId])
 
+  // Cmd+F で検索バー表示
+  useEffect(() => {
+    if (!active) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+        e.preventDefault()
+        setShowSearch((prev) => {
+          if (prev) {
+            // 閉じる時に検索ハイライトをクリア
+            const t = terminals.get(sessionId)
+            if (t) {
+              t.searchAddon.clearDecorations()
+              t.xterm.focus()
+            }
+            return false
+          }
+          return true
+        })
+      }
+      if (e.key === 'Escape' && showSearch) {
+        const t = terminals.get(sessionId)
+        if (t) {
+          t.searchAddon.clearDecorations()
+          t.xterm.focus()
+        }
+        setShowSearch(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [active, sessionId, showSearch])
+
+  // 検索バー表示時にフォーカス
+  useEffect(() => {
+    if (showSearch) searchRef.current?.focus()
+  }, [showSearch])
+
+  const handleSearch = (value: string) => {
+    const t = terminals.get(sessionId)
+    if (!t) return
+    if (value) {
+      t.searchAddon.findNext(value)
+    } else {
+      t.searchAddon.clearDecorations()
+    }
+  }
+
   // ウィンドウリサイズ対応
   useEffect(() => {
     const handleResize = () => {
@@ -127,5 +179,36 @@ export default function Terminal({ sessionId, active }: Props) {
     return () => window.removeEventListener('resize', handleResize)
   }, [active, sessionId])
 
-  return <div ref={containerRef} className="terminal-container" />
+  return (
+    <div style={{ position: 'relative', height: '100%' }}>
+      {showSearch && (
+        <div className="search-bar">
+          <input
+            ref={searchRef}
+            type="text"
+            placeholder="検索..."
+            onChange={(e) => handleSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const t = terminals.get(sessionId)
+                if (t) {
+                  if (e.shiftKey) t.searchAddon.findPrevious(e.currentTarget.value)
+                  else t.searchAddon.findNext(e.currentTarget.value)
+                }
+              }
+              if (e.key === 'Escape') {
+                const t = terminals.get(sessionId)
+                if (t) {
+                  t.searchAddon.clearDecorations()
+                  t.xterm.focus()
+                }
+                setShowSearch(false)
+              }
+            }}
+          />
+        </div>
+      )}
+      <div ref={containerRef} className="terminal-container" />
+    </div>
+  )
 }
