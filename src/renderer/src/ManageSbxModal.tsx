@@ -12,6 +12,7 @@ export default function ManageSbxModal({ onClose }: Props) {
   const [deleting, setDeleting] = useState<string | null>(null)
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null)
   const [config, setConfig] = useState<SbxPreviewConfig | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
     setLoading(true)
@@ -94,7 +95,7 @@ export default function ManageSbxModal({ onClose }: Props) {
                 <span className="sbx-name">{name}</span>
                 <button
                   className="btn-danger"
-                  onClick={() => handleDelete(name)}
+                  onClick={() => setConfirmDelete(name)}
                   disabled={deleting === name}
                 >
                   {deleting === name ? '削除中...' : '削除'}
@@ -131,6 +132,27 @@ export default function ManageSbxModal({ onClose }: Props) {
           <button onClick={onClose}>閉じる</button>
         </div>
       </div>
+
+      {confirmDelete && (
+        <div className="modal-overlay" style={{ zIndex: 200 }} onClick={() => setConfirmDelete(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>削除確認</h2>
+            <p><strong>{confirmDelete}</strong> を削除する？</p>
+            <div className="modal-actions">
+              <button onClick={() => setConfirmDelete(null)}>キャンセル</button>
+              <button
+                className="btn-danger-confirm"
+                onClick={() => {
+                  handleDelete(confirmDelete)
+                  setConfirmDelete(null)
+                }}
+              >
+                削除
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -516,6 +516,16 @@ body {
   cursor: not-allowed;
 }
 
+.btn-danger-confirm {
+  background: var(--red) !important;
+  color: var(--crust) !important;
+  font-weight: 500;
+}
+
+.btn-danger-confirm:hover {
+  filter: brightness(0.9);
+}
+
 /* Dockerfile editor */
 .dockerfile-editor {
   width: 100%;

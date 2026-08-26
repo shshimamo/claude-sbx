@@ -364,7 +364,7 @@ export class SbxManager {
       template: cfg.sbx?.template || '',
       cloneBase: cfg.sbx?.clone_base || '~/src',
       worktreeBase: cfg.sbx?.worktree_base || '',
-      mounts: cfg.sbx?.mounts || [],
+      mounts: [join(homedir(), '.claude-sbx'), ...(cfg.sbx?.mounts || [])],
       kits: cfg.sbx?.kits || [],
       postCreateCmds: cfg.sbx?.post_create_cmds || [],
       plugins: cfg.sbx?.plugins || [],
