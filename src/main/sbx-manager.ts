@@ -288,8 +288,7 @@ export class SbxManager {
 
     const wtBase = expandHome(cfg.sbx?.worktree_base || '~/worktrees')
     const dirPrefix = prNumber ? `pr${prNumber}-` : ''
-    const safeBranch = branch.replace(/\//g, '__')
-    const wtPath = join(wtBase, repoName, dirPrefix + safeBranch)
+    const wtPath = join(wtBase, repoName, dirPrefix + branch)
 
     if (existsSync(wtPath)) {
       return { ok: true, wtPath, message: `Worktree already exists: ${wtPath}` }
