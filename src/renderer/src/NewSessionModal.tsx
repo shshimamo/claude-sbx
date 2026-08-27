@@ -139,9 +139,8 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
     if (isPR) {
       return [`(PR link → ブランチ名を自動解決して worktree 作成)`]
     }
-    const safeBranch = wtBranch.replace(/\//g, '__')
     return [
-      `git worktree add ${wtBase_}/${repoName}/${safeBranch}${wtBase ? ` (base: ${wtBase})` : ''}`,
+      `git worktree add ${wtBase_}/${repoName}/${wtBranch}${wtBase ? ` (base: ${wtBase})` : ''}`,
       `sbx exec -it ${selectedSbx} sh -c 'cd ${wtBase_}/${repoName}/${safeBranch} && claude'`,
     ]
   }, [selectedSbx, mode, selectedRepo, shellCmd, wtRepo, wtBranch, wtBase, config])
