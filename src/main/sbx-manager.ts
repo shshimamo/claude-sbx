@@ -132,7 +132,7 @@ export class SbxManager {
     args.push('claude', ...paths)
 
     try {
-      execSync(`sbx ${args.join(' ')}`, { encoding: 'utf-8', timeout: 60000 })
+      execSync(`sbx ${args.join(' ')}`, { encoding: 'utf-8', timeout: 300000 })
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
       return { ok: false, message: `sbx create failed: ${msg}` }
