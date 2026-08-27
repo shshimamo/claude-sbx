@@ -141,7 +141,7 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
     }
     return [
       `git worktree add ${wtBase_}/${repoName}/${wtBranch}${wtBase ? ` (base: ${wtBase})` : ''}`,
-      `sbx exec -it ${selectedSbx} sh -c 'cd ${wtBase_}/${repoName}/${safeBranch} && claude'`,
+      `sbx exec -it ${selectedSbx} sh -c 'cd ${wtBase_}/${repoName}/${wtBranch} && claude'`,
     ]
   }, [selectedSbx, mode, selectedRepo, shellCmd, wtRepo, wtBranch, wtBase, config])
 

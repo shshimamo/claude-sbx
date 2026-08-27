@@ -86,9 +86,23 @@ function expandHome(p: string): string {
   return p.startsWith('~/') ? join(homedir(), p.slice(2)) : p
 }
 
-export class SbxManager {
-  private repoCache = new Map<string, { path: string; branch: string }[]>()
+const CACHE_DIR = join(homedir(), '.claude-sbx', 'cache')
+const REPO_CACHE_FILE = join(CACHE_DIR, 'repositories.json')
 
+function loadRepoCache(): Record<string, { path: string; branch: string }[]> {
+  try {
+    return JSON.parse(readFileSync(REPO_CACHE_FILE, 'utf-8'))
+  } catch {
+    return {}
+  }
+}
+
+function saveRepoCache(cache: Record<string, { path: string; branch: string }[]>): void {
+  mkdirSync(CACHE_DIR, { recursive: true })
+  writeFileSync(REPO_CACHE_FILE, JSON.stringify(cache, null, 2))
+}
+
+export class SbxManager {
   constructor() {
     ensureDefaults()
   }
@@ -186,8 +200,9 @@ export class SbxManager {
   }
 
   listRepos(sbxName: string, noCache = false): { path: string; branch: string }[] {
-    if (!noCache && this.repoCache.has(sbxName)) {
-      return this.repoCache.get(sbxName)!
+    const cache = loadRepoCache()
+    if (!noCache && cache[sbxName]) {
+      return cache[sbxName]
     }
 
     const cfg = loadConfig()
@@ -216,7 +231,8 @@ export class SbxManager {
         }
       } catch { /* ignore */ }
     }
-    this.repoCache.set(sbxName, repos)
+    cache[sbxName] = repos
+    saveRepoCache(cache)
     return repos
   }
 
