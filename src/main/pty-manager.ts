@@ -46,7 +46,8 @@ export class PtyManager {
       env: { ...process.env, TERM: 'xterm-256color' },
     })
 
-    const execCmd = shell || 'claude'
+    const ALLOWED_SHELLS = ['claude', 'bash', 'zsh']
+    const execCmd = shell && ALLOWED_SHELLS.includes(shell) ? shell : 'claude'
     const innerCmd = `cd ${shellEscape(repoPath)} && ${execCmd}`
     const cmd = `sbx exec -it ${shellEscape(sbx)} sh -c ${shellEscape(innerCmd)}`
     proc.write(cmd + '\r')

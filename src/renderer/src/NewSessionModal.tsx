@@ -18,7 +18,7 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
 
   // existing / shell mode
   const [selectedRepo, setSelectedRepo] = useState('')
-  const [shellCmd, setShellCmd] = useState('zsh')
+  const [shellCmd, setShellCmd] = useState('bash')
 
   // worktree mode
   const [wtRepo, setWtRepo] = useState('')
