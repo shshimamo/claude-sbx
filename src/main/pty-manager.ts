@@ -1,5 +1,5 @@
 import * as pty from 'node-pty'
-import { execSync } from 'child_process'
+import { execFileSync } from 'child_process'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { homedir } from 'os'
@@ -27,6 +27,10 @@ function expandHome(p: string): string {
   return p.startsWith('~/') ? join(homedir(), p.slice(2)) : p
 }
 
+function shellEscape(s: string): string {
+  return "'" + s.replace(/'/g, "'\\''") + "'"
+}
+
 export class PtyManager {
   private sessions = new Map<string, PtySession>()
   private counter = 0
@@ -43,7 +47,8 @@ export class PtyManager {
     })
 
     const execCmd = shell || 'claude'
-    const cmd = `sbx exec -it ${sbx} sh -c 'cd ${repoPath} && ${execCmd}'`
+    const innerCmd = `cd ${shellEscape(repoPath)} && ${execCmd}`
+    const cmd = `sbx exec -it ${shellEscape(sbx)} sh -c ${shellEscape(innerCmd)}`
     proc.write(cmd + '\r')
 
     this.sessions.set(id, { process: proc, sbx, repoPath })
@@ -82,7 +87,7 @@ export class PtyManager {
 
   listSbx(): string[] {
     try {
-      const output = execSync('sbx ls -q', { encoding: 'utf-8', timeout: 5000 })
+      const output = execFileSync('sbx', ['ls', '-q'], { encoding: 'utf-8', timeout: 5000 })
       return output.trim().split('\n').filter(Boolean)
     } catch {
       return []
@@ -99,8 +104,8 @@ export class PtyManager {
     const repos: { path: string; branch: string }[] = []
     for (const base of bases) {
       try {
-        const output = execSync(
-          `sbx exec ${sbxName} find ${base} -name .git -type d -maxdepth 4`,
+        const output = execFileSync(
+          'sbx', ['exec', sbxName, 'find', base, '-name', '.git', '-type', 'd', '-maxdepth', '4'],
           { encoding: 'utf-8', timeout: 10000 },
         )
         for (const line of output.trim().split('\n')) {
@@ -108,8 +113,8 @@ export class PtyManager {
           const repoPath = line.replace(/\/\.git$/, '')
           let branch = ''
           try {
-            branch = execSync(
-              `sbx exec ${sbxName} git -C ${repoPath} rev-parse --abbrev-ref HEAD`,
+            branch = execFileSync(
+              'sbx', ['exec', sbxName, 'git', '-C', repoPath, 'rev-parse', '--abbrev-ref', 'HEAD'],
               { encoding: 'utf-8', timeout: 5000 },
             ).trim()
           } catch { /* ignore */ }

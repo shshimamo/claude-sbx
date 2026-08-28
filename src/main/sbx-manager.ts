@@ -1,4 +1,4 @@
-import { execSync, exec } from 'child_process'
+import { execFileSync, execFile } from 'child_process'
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
 import { join, basename } from 'path'
 import { homedir } from 'os'
@@ -109,7 +109,7 @@ export class SbxManager {
 
   list(): string[] {
     try {
-      return execSync('sbx ls -q', { encoding: 'utf-8', timeout: 5000 })
+      return execFileSync('sbx', ['ls', '-q'], { encoding: 'utf-8', timeout: 5000 })
         .trim().split('\n').filter(Boolean)
     } catch {
       return []
@@ -132,7 +132,7 @@ export class SbxManager {
     args.push('claude', ...paths)
 
     try {
-      execSync(`sbx ${args.join(' ')}`, { encoding: 'utf-8', timeout: 300000 })
+      execFileSync('sbx', args, { encoding: 'utf-8', timeout: 300000 })
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
       return { ok: false, message: `sbx create failed: ${msg}` }
@@ -144,7 +144,7 @@ export class SbxManager {
         if (cmd.length > 0) {
           try {
             const expanded = cmd.map(expandHome)
-            execSync(`sbx exec ${name} ${expanded.join(' ')}`, { timeout: 30000 })
+            execFileSync('sbx', ['exec', name, ...expanded], { timeout: 30000 })
           } catch { /* ignore */ }
         }
       }
@@ -159,11 +159,11 @@ export class SbxManager {
           return { ok: true, message: `sbx created: ${name}（警告: plugin source "${pc.source}" がマウントされていない）` }
         }
         try {
-          execSync(`sbx exec ${name} claude plugins marketplace add ${source}`, { timeout: 30000 })
+          execFileSync('sbx', ['exec', name, 'claude', 'plugins', 'marketplace', 'add', source], { timeout: 30000 })
         } catch { /* ignore */ }
         for (const plugin of pc.plugins) {
           try {
-            execSync(`sbx exec ${name} claude plugins install ${plugin}`, { timeout: 30000 })
+            execFileSync('sbx', ['exec', name, 'claude', 'plugins', 'install', plugin], { timeout: 30000 })
           } catch { /* ignore */ }
         }
       }
@@ -191,7 +191,7 @@ export class SbxManager {
 
   delete(name: string): { ok: boolean; message: string } {
     try {
-      execSync(`sbx rm -f ${name}`, { encoding: 'utf-8', timeout: 15000 })
+      execFileSync('sbx', ['rm', '-f', name], { encoding: 'utf-8', timeout: 15000 })
       return { ok: true, message: `sbx deleted: ${name}` }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
@@ -213,8 +213,8 @@ export class SbxManager {
     const repos: { path: string; branch: string }[] = []
     for (const base of bases) {
       try {
-        const output = execSync(
-          `sbx exec ${sbxName} find ${base} -name .git -type d -maxdepth 4`,
+        const output = execFileSync(
+          'sbx', ['exec', sbxName, 'find', base, '-name', '.git', '-type', 'd', '-maxdepth', '4'],
           { encoding: 'utf-8', timeout: 10000 },
         )
         for (const line of output.trim().split('\n')) {
@@ -222,8 +222,8 @@ export class SbxManager {
           const repoPath = line.replace(/\/\.git$/, '')
           let branch = ''
           try {
-            branch = execSync(
-              `sbx exec ${sbxName} git -C ${repoPath} rev-parse --abbrev-ref HEAD`,
+            branch = execFileSync(
+              'sbx', ['exec', sbxName, 'git', '-C', repoPath, 'rev-parse', '--abbrev-ref', 'HEAD'],
               { encoding: 'utf-8', timeout: 5000 },
             ).trim()
           } catch { /* ignore */ }
@@ -239,8 +239,8 @@ export class SbxManager {
   // ブランチ一覧取得
   listBranches(sbxName: string, repoPath: string): string[] {
     try {
-      const output = execSync(
-        `sbx exec ${sbxName} git -C ${repoPath} branch -r --format='%(refname:short)'`,
+      const output = execFileSync(
+        'sbx', ['exec', sbxName, 'git', '-C', repoPath, 'branch', '-r', '--format=%(refname:short)'],
         { encoding: 'utf-8', timeout: 10000 },
       )
       return output.trim().split('\n')
@@ -258,8 +258,8 @@ export class SbxManager {
       const parts = input.split('/pull/')
       const prNumber = parts[1]?.replace(/\/$/, '') || ''
       try {
-        const branch = execSync(
-          `gh pr view ${input} --json headRefName -q .headRefName`,
+        const branch = execFileSync(
+          'gh', ['pr', 'view', input, '--json', 'headRefName', '-q', '.headRefName'],
           { encoding: 'utf-8', timeout: 15000 },
         ).trim()
         return { branch, prNumber }
@@ -288,7 +288,7 @@ export class SbxManager {
     // clone_base からリポジトリを探す
     let repoPath = ''
     try {
-      const output = execSync(`find ${cloneBase} -name .git -type d -maxdepth 4`, { encoding: 'utf-8', timeout: 10000 })
+      const output = execFileSync('find', [cloneBase, '-name', '.git', '-type', 'd', '-maxdepth', '4'], { encoding: 'utf-8', timeout: 10000 })
       for (const line of output.trim().split('\n')) {
         if (!line) continue
         const dir = line.replace(/\/\.git$/, '')
@@ -311,7 +311,7 @@ export class SbxManager {
 
     // git fetch
     try {
-      execSync(`git -C ${repoPath} fetch origin`, { timeout: 30000 })
+      execFileSync('git', ['-C', repoPath, 'fetch', 'origin'], { timeout: 30000 })
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
       return { ok: false, wtPath: '', message: `git fetch failed: ${msg}` }
@@ -320,10 +320,10 @@ export class SbxManager {
     // base branch 検証
     if (baseBranch) {
       try {
-        execSync(`git -C ${repoPath} rev-parse --verify ${baseBranch}`, { timeout: 5000 })
+        execFileSync('git', ['-C', repoPath, 'rev-parse', '--verify', baseBranch], { timeout: 5000 })
       } catch {
         try {
-          execSync(`git -C ${repoPath} rev-parse --verify origin/${baseBranch}`, { timeout: 5000 })
+          execFileSync('git', ['-C', repoPath, 'rev-parse', '--verify', `origin/${baseBranch}`], { timeout: 5000 })
         } catch {
           return { ok: false, wtPath: '', message: `Base branch not found: ${baseBranch}` }
         }
@@ -333,27 +333,27 @@ export class SbxManager {
     // remote branch の存在確認
     let isRemote = false
     try {
-      execSync(`git -C ${repoPath} rev-parse origin/${branch}`, { timeout: 5000 })
+      execFileSync('git', ['-C', repoPath, 'rev-parse', `origin/${branch}`], { timeout: 5000 })
       isRemote = true
     } catch { /* not remote */ }
 
     try {
       if (isRemote) {
-        execSync(`git -C ${repoPath} worktree add ${wtPath} origin/${branch}`, { timeout: 30000 })
+        execFileSync('git', ['-C', repoPath, 'worktree', 'add', wtPath, `origin/${branch}`], { timeout: 30000 })
       } else {
         // ローカルブランチ確認
         let isLocal = false
         try {
-          execSync(`git -C ${repoPath} rev-parse --verify ${branch}`, { timeout: 5000 })
+          execFileSync('git', ['-C', repoPath, 'rev-parse', '--verify', branch], { timeout: 5000 })
           isLocal = true
         } catch { /* new branch */ }
 
         if (isLocal) {
-          execSync(`git -C ${repoPath} worktree add ${wtPath} ${branch}`, { timeout: 30000 })
+          execFileSync('git', ['-C', repoPath, 'worktree', 'add', wtPath, branch], { timeout: 30000 })
         } else {
-          const args = [`-C`, repoPath, `worktree`, `add`, wtPath, `-b`, branch]
+          const args = ['-C', repoPath, 'worktree', 'add', wtPath, '-b', branch]
           if (baseBranch) args.push(baseBranch)
-          execSync(`git ${args.join(' ')}`, { timeout: 30000 })
+          execFileSync('git', args, { timeout: 30000 })
         }
       }
     } catch (e: unknown) {
@@ -438,18 +438,18 @@ export class SbxManager {
     const dir = join(homedir(), '.claude-sbx')
 
     // 非同期で実行（ビルドに時間がかかるため）
-    exec(`docker build -t ${tag} -f ${dockerfilePath} ${dir}`, { timeout: 300000 }, (err, _stdout, stderr) => {
+    execFile('docker', ['build', '-t', tag, '-f', dockerfilePath, dir], { timeout: 300000 }, (err, _stdout, stderr) => {
       if (err) {
         cb({ ok: false, message: `docker build failed: ${stderr}` })
         return
       }
       const tmpFile = join(tmpdir(), `sbx-template-${Date.now()}.tar`)
-      exec(`docker save ${tag} -o ${tmpFile}`, { timeout: 120000 }, (err2, _stdout2, stderr2) => {
+      execFile('docker', ['save', tag, '-o', tmpFile], { timeout: 120000 }, (err2, _stdout2, stderr2) => {
         if (err2) {
           cb({ ok: false, message: `docker save failed: ${stderr2}` })
           return
         }
-        exec(`sbx template load ${tmpFile}`, { timeout: 120000 }, (err3, _stdout3, stderr3) => {
+        execFile('sbx', ['template', 'load', tmpFile], { timeout: 120000 }, (err3, _stdout3, stderr3) => {
           try { require('fs').unlinkSync(tmpFile) } catch { /* ignore */ }
           if (err3) {
             cb({ ok: false, message: `sbx template load failed: ${stderr3}` })
