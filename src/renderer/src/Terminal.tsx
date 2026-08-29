@@ -57,7 +57,7 @@ export default function Terminal({ sessionId, active }: Props) {
     xterm.loadAddon(fitAddon)
     xterm.loadAddon(searchAddon)
     xterm.open(containerRef.current)
-    fitAddon.fit()
+    requestAnimationFrame(() => fitAddon.fit())
 
     // OSC 52 (クリップボード書き込み) をハンドリング
     xterm.parser.registerOscHandler(52, (data) => {
