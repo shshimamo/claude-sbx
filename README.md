@@ -16,6 +16,8 @@ sbx 内での Claude Code 利用を制御する Electron デスクトップア�
 | Worktree | ブランチサジェスト、PR Link からブランチ自動解決（`gh` 使用） |
 | Plugins | sbx 作成時に Claude plugins を自動インストール |
 | ターミナル | xterm.js による組み込みターミナル、sbx 内で直接操作 |
+| ステータス表示 | セッションの状態（入力待ち / 処理待ち）をサイドバーにリアルタイム表示 |
+| OS 通知 | タスク完了・許可待ち・質問ありを macOS 通知で受け取り |
 
 ## インストール
 
@@ -70,22 +72,23 @@ pnpm build
 | `Stop` | Claude がタスクを完了して停止した時 |
 | `PermissionRequest` | ツール実行の許可を求めている時 |
 | `AskUserQuestion` | Claude がユーザーに質問している時 |
-| `SessionStart` | Claude セッションが開始した時 |
-| `SessionEnd` | Claude セッションが終了した時 |
-| `UserPromptSubmit` | ユーザーがプロンプトを送信した時 |
-| `PostToolUse` | ツール実行が完了した時 |
 
-推奨: `["Stop", "PermissionRequest", "AskUserQuestion"]`
+## 通知とステータス表示の有効化
 
-## 通知の有効化（hook_notifications）
+`post_create_cmds` に `setup_hooks.sh` を設定すると以下の機能が提供される:
 
-Claude Code の hook を利用してタスク完了・許可待ちなどを macOS 通知で受け取れる。
+- **OS 通知**: タスク完了・許可待ち・質問ありを macOS 通知で受け取る（`hook_notifications.events` で制御）
+- **ステータス表示**: サイドバーに「入力待ち」「処理待ち」をリアルタイム表示（常に有効）
 
 ### セットアップ
 
-1. `setup_hooks.sh` を `~/.claude-sbx/` にコピー（`examples/post_create_cmds/setup_hooks.sh` を参照）
-2. config.json の `post_create_cmds` に `setup_hooks.sh` を追加
-3. config.json に `hook_notifications` を設定
+1. `examples/post_create_cmds/setup_hooks.sh` を `~/.claude-sbx/` にコピー
+
+```sh
+cp examples/post_create_cmds/setup_hooks.sh ~/.claude-sbx/
+```
+
+2. config.json に以下を追加
 
 ```json
 {
@@ -100,9 +103,9 @@ Claude Code の hook を利用してタスク完了・許可待ちなどを macO
 }
 ```
 
-`~/.claude-sbx` は sbx 作成時に自動マウントされる。
+3. sbx を新規作成すると `setup_hooks.sh` が自動実行され、sbx 内に hooks が設定される
 
-4. sbx を新規作成すると `setup_hooks.sh` が自動実行され、sbx 内の `~/.claude/settings.json` に hooks が設定される
+`~/.claude-sbx` は sbx 作成時に自動マウントされる。
 
 既存の sbx に後から設定する場合は手動実行:
 
@@ -133,7 +136,8 @@ claude-sbx/
 │   │   ├── index.ts          # Electron メインプロセス、IPC ハンドラ
 │   │   ├── pty-manager.ts    # PTY ライフサイクル管理
 │   │   ├── sbx-manager.ts    # sbx CRUD, Dockerfile, Worktree, Plugins
-│   │   └── session-store.ts  # セッション管理
+│   │   ├── session-store.ts  # セッション管理
+│   │   └── hook-watcher.ts   # hook イベント監視（通知 + 状態更新）
 │   ├── preload/
 │   │   └── index.ts          # Context bridge (main ↔ renderer)
 │   └── renderer/
@@ -158,7 +162,10 @@ claude-sbx/
 ```
 ~/.claude-sbx/              # 初回起動時に自動生成
 ├── config.json              # 設定ファイル
-└── Dockerfile               # sbx テンプレート用 Dockerfile
+├── Dockerfile               # sbx テンプレート用 Dockerfile
+├── setup_hooks.sh           # hook セットアップスクリプト（手動コピー）
+├── notifications/           # OS 通知用イベントファイル
+└── states/                  # ステータス表示用イベントファイル
 ```
 
 ## 前提ツール

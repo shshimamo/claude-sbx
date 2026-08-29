@@ -1,9 +1,18 @@
 import { app, BrowserWindow, ipcMain, Menu, Notification } from 'electron'
 import { join } from 'path'
+import { homedir } from 'os'
 import { PtyManager } from './pty-manager'
 import { SessionStore } from './session-store'
 import { SbxManager } from './sbx-manager'
 import { HookWatcher } from './hook-watcher'
+
+const EVENT_TITLES: Record<string, string> = {
+  Stop: 'タスク完了',
+  PermissionRequest: '許可待ち',
+  AskUserQuestion: '質問あり',
+}
+
+const INPUT_EVENTS = ['Stop', 'PermissionRequest', 'AskUserQuestion']
 
 // eslint-disable-next-line no-control-regex
 const ANSI_RE = /\x1b\[[0-9;]*[a-zA-Z]|\x1b\].*?(\x07|\x1b\\)/g
@@ -33,7 +42,9 @@ let mainWindow: BrowserWindow | null = null
 const sessionStore = new SessionStore()
 const ptyManager = new PtyManager()
 const sbxManager = new SbxManager()
-const hookWatcher = new HookWatcher()
+const sbxDir = join(homedir(), '.claude-sbx')
+const notifyWatcher = new HookWatcher(join(sbxDir, 'notifications'))
+const stateWatcher = new HookWatcher(join(sbxDir, 'states'))
 // pty 出力バッファ（レンダラー準備完了前のデータを保持）
 const ptyBuffers = new Map<string, string[]>()
 const ptyReady = new Set<string>()
@@ -254,12 +265,27 @@ app.whenReady().then(() => {
   setupIPC()
   createWindow()
 
-  // hook 通知の監視開始
+  // OS通知の監視開始
   const hookEvents = sbxManager.getHookNotificationEvents()
   if (hookEvents.length > 0) {
-    hookWatcher.setEvents(hookEvents)
-    hookWatcher.start()
+    notifyWatcher.setOnEvent((hookEvent) => {
+      if (!hookEvents.includes(hookEvent.event)) return
+      const title = EVENT_TITLES[hookEvent.event] || hookEvent.event
+      const cwd = hookEvent.data?.cwd || ''
+      const body = cwd ? cwd.split('/').pop() || '' : hookEvent.data?.session_id || ''
+      new Notification({ title, body }).show()
+    })
+    notifyWatcher.start()
   }
+
+  // 状態監視の開始（常に有効）
+  stateWatcher.setOnEvent((hookEvent) => {
+    if (!hookEvent.claude_sbx_id) return
+    const hookState = INPUT_EVENTS.includes(hookEvent.event) ? 'input' : 'busy'
+    sessionStore.updateHookState(hookEvent.claude_sbx_id, hookState)
+    mainWindow?.webContents.send('sessions:updated', sessionStore.getAll())
+  })
+  stateWatcher.start()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
@@ -267,7 +293,8 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
-  hookWatcher.stop()
+  notifyWatcher.stop()
+  stateWatcher.stop()
   ptyManager.killAll()
   if (process.platform !== 'darwin') app.quit()
 })

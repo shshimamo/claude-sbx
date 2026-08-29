@@ -1,3 +1,5 @@
+type HookState = 'input' | 'busy'
+
 interface Session {
   id: string
   sbx: string
@@ -5,6 +7,7 @@ interface Session {
   shell?: string
   name: string
   status: 'active' | 'terminated'
+  hookState: HookState
   createdAt: number
   lastUpdated: number
 }

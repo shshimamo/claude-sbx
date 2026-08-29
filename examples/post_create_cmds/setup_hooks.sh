@@ -10,20 +10,35 @@ if [ -z "$SBX_DIR" ]; then
   exit 1
 fi
 
-# --- notify.sh 作成 ---
+# --- notify.sh 作成 (OS通知用) ---
 mkdir -p "$SBX_DIR/bin"
 cat > "$SBX_DIR/bin/notify.sh" << NOTIFY_SCRIPT
 #!/bin/sh
-# Claude Code hook から呼ばれ、stdin の JSON を丸ごとファイルに書く
+# OS通知用: stdin の JSON を notifications/ に書く
 EVENT="\$1"
 INPUT=\$(cat)
-SESSION_ID=\$(echo "\$INPUT" | grep -o '"session_id" *: *"[^"]*"' | head -1 | sed 's/.*: *"//;s/"//')
-[ -z "\$SESSION_ID" ] && exit 0
-DIR="$SBX_DIR/sessions"
-mkdir -p "\$DIR"
-printf '{"event":"%s","data":%s}\n' "\$EVENT" "\$INPUT" > "\$DIR/\$SESSION_ID.json"
+CLAUDE_SBX_ID_VAL=\${CLAUDE_SBX_ID:-}
+NOTIFY_DIR="$SBX_DIR/notifications"
+mkdir -p "\$NOTIFY_DIR"
+NOTIFY_FILE="\$NOTIFY_DIR/\$(date +%s%N)-\$\$.json"
+printf '{"event":"%s","claude_sbx_id":"%s","data":%s}\n' "\$EVENT" "\$CLAUDE_SBX_ID_VAL" "\$INPUT" > "\$NOTIFY_FILE"
 NOTIFY_SCRIPT
 chmod +x "$SBX_DIR/bin/notify.sh"
+
+# --- state.sh 作成 (状態更新用) ---
+cat > "$SBX_DIR/bin/state.sh" << STATE_SCRIPT
+#!/bin/sh
+# 状態更新用: stdin の JSON を states/ に書く
+EVENT="\$1"
+INPUT=\$(cat)
+CLAUDE_SBX_ID_VAL=\${CLAUDE_SBX_ID:-}
+[ -z "\$CLAUDE_SBX_ID_VAL" ] && exit 0
+STATE_DIR="$SBX_DIR/states"
+mkdir -p "\$STATE_DIR"
+STATE_FILE="\$STATE_DIR/\$(date +%s%N)-\$\$.json"
+printf '{"event":"%s","claude_sbx_id":"%s","data":%s}\n' "\$EVENT" "\$CLAUDE_SBX_ID_VAL" "\$INPUT" > "\$STATE_FILE"
+STATE_SCRIPT
+chmod +x "$SBX_DIR/bin/state.sh"
 
 # --- settings.json に hooks をマージ ---
 SETTINGS="$HOME/.claude/settings.json"
@@ -33,9 +48,24 @@ python3 -c "
 import json
 
 hooks = {
-    'Stop': [{'matcher': '', 'hooks': [{'type': 'command', 'command': '$SBX_DIR/bin/notify.sh Stop'}]}],
-    'PermissionRequest': [{'matcher': '', 'hooks': [{'type': 'command', 'command': '$SBX_DIR/bin/notify.sh PermissionRequest'}]}],
-    'PreToolUse': [{'matcher': 'AskUserQuestion', 'hooks': [{'type': 'command', 'command': '$SBX_DIR/bin/notify.sh AskUserQuestion'}]}],
+    'Stop': [
+        {'matcher': '', 'hooks': [{'type': 'command', 'command': '$SBX_DIR/bin/notify.sh Stop'}]},
+        {'matcher': '', 'hooks': [{'type': 'command', 'command': '$SBX_DIR/bin/state.sh Stop'}]},
+    ],
+    'PermissionRequest': [
+        {'matcher': '', 'hooks': [{'type': 'command', 'command': '$SBX_DIR/bin/notify.sh PermissionRequest'}]},
+        {'matcher': '', 'hooks': [{'type': 'command', 'command': '$SBX_DIR/bin/state.sh PermissionRequest'}]},
+    ],
+    'PreToolUse': [
+        {'matcher': 'AskUserQuestion', 'hooks': [{'type': 'command', 'command': '$SBX_DIR/bin/notify.sh AskUserQuestion'}]},
+        {'matcher': 'AskUserQuestion', 'hooks': [{'type': 'command', 'command': '$SBX_DIR/bin/state.sh AskUserQuestion'}]},
+    ],
+    'UserPromptSubmit': [
+        {'matcher': '', 'hooks': [{'type': 'command', 'command': '$SBX_DIR/bin/state.sh UserPromptSubmit'}]},
+    ],
+    'PostToolUse': [
+        {'matcher': '', 'hooks': [{'type': 'command', 'command': '$SBX_DIR/bin/state.sh PostToolUse'}]},
+    ],
 }
 
 path = '$SETTINGS'

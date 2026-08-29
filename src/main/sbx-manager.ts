@@ -231,6 +231,7 @@ export class SbxManager {
         }
       } catch { /* ignore */ }
     }
+    repos.sort((a, b) => basename(a.path).localeCompare(basename(b.path)))
     cache[sbxName] = repos
     saveRepoCache(cache)
     return repos

@@ -17,6 +17,11 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   terminated: { label: 'Ended', color: '#585b70' },
 }
 
+const HOOK_STATE_COLORS: Record<HookState, string> = {
+  busy: '#f9e2af',  // yellow - 処理待ち
+  input: '#89b4fa', // blue - 入力待ち
+}
+
 export default function Sidebar({ sessions, activeId, onSelect, onClose, onRename, onNewSession, onManageSbx, onDockerfile, onConfig }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -67,13 +72,15 @@ export default function Sidebar({ sessions, activeId, onSelect, onClose, onRenam
       <div className="session-list">
         {sessions.map((s) => {
           const st = STATUS_LABELS[s.status] || STATUS_LABELS.active
+          const dotColor = (s.status === 'active' && s.hookState) ? HOOK_STATE_COLORS[s.hookState] : st.color
+          const pulsing = s.status === 'active' && s.hookState === 'input'
           return (
             <div
               key={s.id}
               className={`session-item ${s.id === activeId ? 'active' : ''}`}
               onClick={() => onSelect(s.id)}
             >
-              <span className="status-dot" style={{ background: st.color }} />
+              <span className={`status-dot ${pulsing ? 'status-dot-pulse' : ''}`} style={{ background: dotColor }} />
               <div className="session-info">
                 {editingId === s.id ? (
                   <input
@@ -98,7 +105,15 @@ export default function Sidebar({ sessions, activeId, onSelect, onClose, onRenam
                     }}
                   >{s.name}</div>
                 )}
-                <div className="session-meta">{s.sbx}</div>
+                <div className="session-meta">
+                  {s.sbx}
+                  {s.status === 'active' && s.hookState === 'input' && (
+                    <span className="hook-state-label" style={{ color: dotColor }}> · 入力待ち</span>
+                  )}
+                  {s.status === 'active' && s.hookState === 'busy' && (
+                    <span className="hook-state-label" style={{ color: dotColor }}> · 処理待ち</span>
+                  )}
+                </div>
               </div>
               <button
                 className="btn-close"
