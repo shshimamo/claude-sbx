@@ -73,14 +73,13 @@ export default function Sidebar({ sessions, activeId, onSelect, onClose, onRenam
         {sessions.map((s) => {
           const st = STATUS_LABELS[s.status] || STATUS_LABELS.active
           const dotColor = (s.status === 'active' && s.hookState) ? HOOK_STATE_COLORS[s.hookState] : st.color
-          const pulsing = s.status === 'active' && s.hookState === 'input'
           return (
             <div
               key={s.id}
               className={`session-item ${s.id === activeId ? 'active' : ''}`}
               onClick={() => onSelect(s.id)}
             >
-              <span className={`status-dot ${pulsing ? 'status-dot-pulse' : ''}`} style={{ background: dotColor }} />
+              <span className="status-dot" style={{ background: dotColor }} />
               <div className="session-info">
                 {editingId === s.id ? (
                   <input

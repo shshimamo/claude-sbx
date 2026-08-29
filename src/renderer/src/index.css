@@ -113,14 +113,6 @@ body {
   flex-shrink: 0;
 }
 
-.status-dot-pulse {
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
 
 .session-info {
   flex: 1;
