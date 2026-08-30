@@ -9,7 +9,7 @@ interface Props {
 
 export default function NewSessionModal({ onClose, onCreate }: Props) {
   const [sbxList, setSbxList] = useState<string[]>([])
-  const [repos, setRepos] = useState<{ path: string; branch: string }[]>([])
+  const [repos, setRepos] = useState<{ path: string }[]>([])
   const [selectedSbx, setSelectedSbx] = useState('')
   const [mode, setMode] = useState<Mode>('existing')
   const [loading, setLoading] = useState(true)
@@ -206,7 +206,7 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
                     <select value={selectedRepo} onChange={(e) => setSelectedRepo(e.target.value)}>
                       {repos.map((r) => (
                         <option key={r.path} value={r.path}>
-                          {r.path.split('/').pop()} {r.branch && `(${r.branch})`}
+                          {r.path.split('/').pop()}
                         </option>
                       ))}
                     </select>
@@ -237,7 +237,7 @@ export default function NewSessionModal({ onClose, onCreate }: Props) {
                     <select value={wtRepo} onChange={(e) => setWtRepo(e.target.value)}>
                       {repos.map((r) => (
                         <option key={r.path} value={r.path}>
-                          {r.path.split('/').pop()} {r.branch && `(${r.branch})`}
+                          {r.path.split('/').pop()}
                         </option>
                       ))}
                     </select>

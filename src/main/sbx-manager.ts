@@ -89,7 +89,7 @@ function expandHome(p: string): string {
 const CACHE_DIR = join(homedir(), '.claude-sbx', 'cache')
 const REPO_CACHE_FILE = join(CACHE_DIR, 'repositories.json')
 
-function loadRepoCache(): Record<string, { path: string; branch: string }[]> {
+function loadRepoCache(): Record<string, { path: string }[]> {
   try {
     return JSON.parse(readFileSync(REPO_CACHE_FILE, 'utf-8'))
   } catch {
@@ -97,7 +97,7 @@ function loadRepoCache(): Record<string, { path: string; branch: string }[]> {
   }
 }
 
-function saveRepoCache(cache: Record<string, { path: string; branch: string }[]>): void {
+function saveRepoCache(cache: Record<string, { path: string }[]>): void {
   mkdirSync(CACHE_DIR, { recursive: true })
   writeFileSync(REPO_CACHE_FILE, JSON.stringify(cache, null, 2))
 }
@@ -199,7 +199,7 @@ export class SbxManager {
     }
   }
 
-  listRepos(sbxName: string, noCache = false): { path: string; branch: string }[] {
+  listRepos(sbxName: string, noCache = false): { path: string }[] {
     const cache = loadRepoCache()
     if (!noCache && cache[sbxName]) {
       return cache[sbxName]
@@ -210,7 +210,7 @@ export class SbxManager {
     if (cfg.sbx?.worktree_base) bases.push(expandHome(cfg.sbx.worktree_base!))
     bases.push(expandHome(cfg.sbx?.clone_base || '~/src'))
 
-    const repos: { path: string; branch: string }[] = []
+    const repos: { path: string }[] = []
     for (const base of bases) {
       try {
         const output = execFileSync(
@@ -220,14 +220,7 @@ export class SbxManager {
         for (const line of output.trim().split('\n')) {
           if (!line) continue
           const repoPath = line.replace(/\/\.git$/, '')
-          let branch = ''
-          try {
-            branch = execFileSync(
-              'sbx', ['exec', sbxName, 'git', '-C', repoPath, 'rev-parse', '--abbrev-ref', 'HEAD'],
-              { encoding: 'utf-8', timeout: 5000 },
-            ).trim()
-          } catch { /* ignore */ }
-          repos.push({ path: repoPath, branch })
+          repos.push({ path: repoPath })
         }
       } catch { /* ignore */ }
     }
